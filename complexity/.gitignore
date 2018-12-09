@@ -1,0 +1,4 @@
+cleanup.sql
+.idea/
+__pycache__*
+venv/
