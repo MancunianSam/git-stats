@@ -1,38 +1,20 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
-import axios from 'axios';
+import React, { Component } from "react";
+import { Route, Router } from "react-router";
+import { Complexity } from "./Complexity";
+import { Home } from "./Home";
+import { BrowserRouter } from "react-router-dom";
+import { NavigationWithRoute } from "./GitStatsNavigation";
 
-interface IRepositories {
-  url: string;
-  name: string;
-}
-
-interface IAppState {
-  repositories: IRepositories[]
-}
-
-class App extends Component<{}, IAppState> {
-  private static state = {
-    repositories: [],
-  }
-
-  public componentDidMount() {
-    axios.get('https://api.github.com/users/MancunianSam/repos').
-    then(response => console.log(response))
-  }
-
+class App extends Component<{}, {}> {
   public render() {
     return (
-      <div className="App">
-        <header className="App-header">
-         <select>
-          {this.state.repositories.map(r => {
-            <option id={r.url}>{r.name}</option>
-          })}         
-           </select> 
-        </header>
-      </div>
+      <BrowserRouter>
+        <div className="App">
+          <NavigationWithRoute />
+          <Route exact path="/" component={Home} />
+          <Route path="/complexity" component={Complexity} />
+        </div>
+      </BrowserRouter>
     );
   }
 }
