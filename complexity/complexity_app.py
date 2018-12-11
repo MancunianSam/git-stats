@@ -2,8 +2,9 @@ from flask import Flask, request
 from celery import Celery
 import pymysql
 import lizard
-import json
 import os
+import json
+from flask_socketio import join_room, leave_room, SocketIO, send
 
 app = Flask(__name__)
 app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/'
@@ -11,9 +12,15 @@ app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/'
 
 base_dir = '/home/sam/'
 
+clients = {}
+
 # Initialize Celery
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+
 celery.conf.update(app.config)
+
+app.config['SECRET_KEY'] = 'secret!'
+socketio = SocketIO(app)
 
 
 def get_connection():
@@ -27,16 +34,28 @@ def build_repository():
     return 'curl http://localhost:5000/repository/' + str(task.id)
 
 
-@app.route('/repository/<task_id>')
-def get_status(task_id):
-    task = analyse_repository.AsyncResult(task_id)
-    response = {
-        'status': task.status
-    }
-    if task.info is not None:
-        response['current'] = task.info['current']
-        response['total'] = task.info['total']
-    return json.dumps(response)
+@app.route('/room')
+def room_response():
+    socketio.emit('room_message', {'message': 'a'}, room='thisisaroom')
+    return "OK"
+
+
+# def get_status(task_id):
+#     task = analyse_repository.AsyncResult(task_id)
+#     response = {
+#         'status': task.status
+#     }
+#     if task.info is not None:
+#         response['current'] = task.info['current']
+#         response['total'] = task.info['total']
+#     return json.dumps(response)
+
+
+@socketio.on('join')
+def on_join(data):
+    room = data['room']
+    join_room(room)
+    print(room)
 
 
 @celery.task(bind=True)
@@ -51,7 +70,7 @@ def analyse_repository(self, repository_name, repository_url, user_name):
 
     files_list = list(files)
     for idx, repository_file in enumerate(files_list):
-        self.update_state(state='RUNNING', meta={'current': idx, 'total': len(files_list)})
+        socketio.emit('update', {'state': 'RUNNING', 'complete': (idx + 1 / len(files_list)) * 100}, room=self.request.id)
 
         file_id = create_file(repository_file, repository_id)
 
@@ -130,4 +149,4 @@ def create_functions(repository_file, file_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app)

@@ -3,3 +3,5 @@ celery
 pymysql
 lizard
 redis
+flask_socketio
+eventlet
