@@ -3,14 +3,13 @@ from celery import Celery
 import pymysql
 import lizard
 import os
-import json
-from flask_socketio import join_room, leave_room, SocketIO, send
+from flask_socketio import join_room, SocketIO
 
 app = Flask(__name__)
 app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/'
 app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/'
 
-base_dir = '/home/sam/'
+base_dir = '/Users/sam.palmer/'
 
 clients = {}
 
@@ -20,7 +19,8 @@ celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
 
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app)
+socketio = SocketIO()
+socketio.init_app(app, message_queue=app.config['CELERY_BROKER_URL'], async_mode='threading')
 
 
 def get_connection():
@@ -31,38 +31,23 @@ def get_connection():
 def build_repository():
     data = request.get_json()
     task = analyse_repository.delay(data['repository_name'], data['repository_url'], data['user_name'])
-    return 'curl http://localhost:5000/repository/' + str(task.id)
-
-
-@app.route('/room')
-def room_response():
-    socketio.emit('room_message', {'message': 'a'}, room='thisisaroom')
-    return "OK"
-
-
-# def get_status(task_id):
-#     task = analyse_repository.AsyncResult(task_id)
-#     response = {
-#         'status': task.status
-#     }
-#     if task.info is not None:
-#         response['current'] = task.info['current']
-#         response['total'] = task.info['total']
-#     return json.dumps(response)
+    return str(task.id)
 
 
 @socketio.on('join')
 def on_join(data):
     room = data['room']
     join_room(room)
-    print(room)
 
 
 @celery.task(bind=True)
 def analyse_repository(self, repository_name, repository_url, user_name):
     print('started')
-    os.system('git clone ' + repository_url + ' /home/sam/' + repository_name + '/')
+    celerysocketio = SocketIO(message_queue='redis://localhost:6379/')
+
+    os.system('git clone ' + repository_url + base_dir + repository_name + '/')
     repository_id = create_repository(repository_name, self.request.id, user_name)
+    print(self.request.id)
 
     files = lizard.analyze(paths=[base_dir + repository_name],
                            exclude_pattern=['*/node_modules/*', '*/build/*'],
@@ -70,7 +55,9 @@ def analyse_repository(self, repository_name, repository_url, user_name):
 
     files_list = list(files)
     for idx, repository_file in enumerate(files_list):
-        socketio.emit('update', {'state': 'RUNNING', 'complete': (idx + 1 / len(files_list)) * 100}, room=self.request.id)
+        celerysocketio.emit('update', {'state': 'RUNNING',
+                                       'complete': ((idx if idx != 0 else idx) / len(files_list)) * 100},
+                            room='notarealroom')
 
         file_id = create_file(repository_file, repository_id)
 
@@ -79,6 +66,9 @@ def analyse_repository(self, repository_name, repository_url, user_name):
         create_aggregate_tables()
 
         os.system('rm -rf /home/sam/' + repository_name)
+
+    celerysocketio.emit('update', {'state': 'COMPLETE', 'complete': 100},
+                        room=self.request.id)
 
 
 def create_aggregate_tables():
