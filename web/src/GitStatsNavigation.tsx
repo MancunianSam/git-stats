@@ -11,6 +11,7 @@ import {
 import MenuIcon from "@material-ui/icons/Menu";
 import { withRouter, match } from "react-router";
 import { History, Location } from "history";
+import styled, { StyledComponent } from "@emotion/styled";
 
 interface IAppProps {
   history: History;
@@ -21,6 +22,11 @@ interface IAppProps {
 interface IAppBarState {
   drawerOpen: boolean;
 }
+
+const Header: StyledComponent<{}, {}, {}> = styled.header`
+  height: 40px;
+  background-color: red;
+`;
 class GitStatsNavigation extends React.Component<IAppProps, IAppBarState> {
   constructor(props: IAppProps) {
     super(props);
@@ -39,31 +45,9 @@ class GitStatsNavigation extends React.Component<IAppProps, IAppBarState> {
 
   public render() {
     return (
-      <div className="App">
-        <AppBar position="static">
-          <Toolbar>
-            <IconButton className="menuButton" onClick={this.toggleDrawer}>
-              <MenuIcon />
-            </IconButton>
-          </Toolbar>
-          <Drawer open={this.state.drawerOpen} onClose={this.toggleDrawer}>
-            <List>
-              {[
-                { label: "Home", url: "/" },
-                { label: "Complexity", url: "/complexity" }
-              ].map(obj => (
-                <ListItem
-                  id={obj.url}
-                  button
-                  key={obj.label}
-                  onClick={() => this.changePage(obj.url)}
-                >
-                  <ListItemText primary={obj.label} />
-                </ListItem>
-              ))}
-            </List>
-          </Drawer>
-        </AppBar>
+      <div>
+        <Header />
+        <div onClick={() => this.changePage("/complexity")}>Complexity</div>
       </div>
     );
   }

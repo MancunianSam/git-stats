@@ -1,14 +1,7 @@
 import * as React from "react";
 import axios from "axios";
-import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FilledInput,
-  LinearProgress,
-  Button
-} from "@material-ui/core";
+import styled, { StyledComponent } from "@emotion/styled";
+import io from "socket.io-client";
 
 interface IRepositories {
   url: string;
@@ -18,9 +11,29 @@ interface IRepositories {
 interface IComplexityState {
   repositories: IRepositories[];
   repository: string;
-  completed?: number;
+  taskId?: string;
+  percentageComplete?: number;
   loading?: boolean;
 }
+
+interface IProgressBarProgress {
+  width: number;
+}
+
+const ProgressBar: StyledComponent<{}, {}, {}> = styled.div`
+  background-color: lightgrey;
+  height: 24px;
+`;
+
+const ProgressBarProgress: StyledComponent<
+  {},
+  IProgressBarProgress,
+  {}
+> = styled.div(props => ({
+  height: "24px",
+  width: `${props.width}%`,
+  backgroundColor: "green"
+}));
 
 export class Complexity extends React.Component<{}, IComplexityState> {
   constructor(props: {}) {
@@ -28,9 +41,36 @@ export class Complexity extends React.Component<{}, IComplexityState> {
     this.state = {
       repositories: [],
       repository: "",
-      completed: 80
+      percentageComplete: 0
     };
   }
+
+  public getPercentageComplete: (taskId: string) => void = taskId => {
+    const socket: SocketIOClient.Socket = io.connect("ws://localhost:5000");
+    this.setState({ taskId });
+    socket.emit("join", { room: this.state.taskId });
+    socket.on("update", response => {
+      console.log(response);
+      this.setState({ percentageComplete: response["complete"] });
+      if (response["state"] === "COMPLETE") {
+        socket.close();
+      }
+    });
+  };
+
+  public loadStats: () => void = () => {
+    this.setState({ loading: true });
+    axios
+      .post("http://localhost:5000/repository", {
+        repository_name: "Spectrum",
+        repository_url: "https://github.com/MancunianSam/spectrum.git",
+        user_name: "MancunianSam"
+      })
+      .then(response => {
+        this.getPercentageComplete(response.data);
+      });
+  };
+
   public componentDidMount() {
     axios
       .get("https://api.github.com/users/MancunianSam/repos")
@@ -39,6 +79,19 @@ export class Complexity extends React.Component<{}, IComplexityState> {
           repositories: response.data
         })
       );
+    axios
+      .get("http://localhost:5000/repository/spectrum/MancunianSam")
+      .then(response => {
+        const status: string = response.data["status"];
+        const taskId: string = response.data["task_id"];
+        if (status === "PENDING") {
+          this.loadStats();
+        } else if (status === "RUNNING") {
+          this.getPercentageComplete(taskId);
+        } else {
+          this.setState({ percentageComplete: 100 });
+        }
+      });
   }
 
   public handleRepositoryChange: (
@@ -47,34 +100,25 @@ export class Complexity extends React.Component<{}, IComplexityState> {
     this.setState({ repository: event.target.value });
   };
 
-  public loadStats: () => void = () => {
-    this.setState({ loading: true });
-  };
-
   public render() {
     return (
       <div>
-        <form autoComplete="off">
-          <FormControl variant="filled">
-            <InputLabel htmlFor="repository">Repository</InputLabel>
-            <Select
-              value={this.state.repository}
-              onChange={this.handleRepositoryChange}
-              input={<FilledInput name="repository" id="repository" />}
-            >
-              {this.state.repositories.map(r => (
-                <MenuItem value={r.url}>{r.name}</MenuItem>
-              ))}
-            </Select>
-            <Button onClick={this.loadStats}>Click</Button>
-          </FormControl>
-          {this.state.loading && (
-            <LinearProgress
-              variant="determinate"
-              value={this.state.completed}
-            />
-          )}
-        </form>
+        <select
+          value={this.state.repository}
+          onChange={this.handleRepositoryChange}
+        >
+          {this.state.repositories.map(r => (
+            <option key={r.name} value={r.url}>
+              {r.name}
+            </option>
+          ))}
+        </select>
+        <button onClick={this.loadStats}>Click</button>
+        {this.state.loading && (
+          <ProgressBar>
+            <ProgressBarProgress width={this.state.percentageComplete} />
+          </ProgressBar>
+        )}
       </div>
     );
   }
