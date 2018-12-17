@@ -41,6 +41,8 @@ def build_repository():
 def is_build_complete(repository_name, user_name):
     repository = get_repository(repository_name, user_name)
     if repository is not None:
+        if repository[4] == 'complete':
+            return json.dumps({'status': 'SUCCESS'})
         task_id = repository[2]
         task = analyse_repository.AsyncResult(task_id)
         response = {
@@ -68,7 +70,7 @@ def analyse_repository(self, repository_name, repository_url, user_name):
     celerysocketio = SocketIO(message_queue='redis://localhost:6379/')
     self.update_state(state='RUNNING', meta={'current': 0, 'total': 100})
 
-    os.system('git clone ' + repository_url + base_dir + repository_name + '/')
+    # os.system('git clone ' + repository_url + base_dir + repository_name + '/')
     repository_id = create_repository(repository_name, self.request.id, user_name)
     print(self.request.id)
 
@@ -76,7 +78,7 @@ def analyse_repository(self, repository_name, repository_url, user_name):
                            exclude_pattern=['*/node_modules/*', '*/build/*'],
                            exts=lizard.get_extensions([]))
 
-    files_list = list(files)[0:200]
+    files_list = list(files)[0:100]
     for idx, repository_file in enumerate(files_list):
         celerysocketio.emit('update', {'state': 'RUNNING',
                                        'complete': ((idx if idx != 0 else idx) / len(files_list)) * 100},
@@ -87,28 +89,33 @@ def analyse_repository(self, repository_name, repository_url, user_name):
 
         create_functions(repository_file, file_id)
 
-        create_aggregate_tables()
+        # os.system('rm -rf /home/sam/' + repository_name)
 
-        os.system('rm -rf /home/sam/' + repository_name)
+    create_aggregate_tables(repository_id)
 
-    celerysocketio.emit('update', {'state': 'COMPLETE', 'complete': 100},
+    celerysocketio.emit('update', {'state': 'SUCCESS', 'complete': 100},
                         room=self.request.id)
 
-    delete_repository(repository_name, user_name)
+    update_repository_status(repository_name, user_name)
 
 
-def create_aggregate_tables():
+def create_aggregate_tables(repository_id):
     connection = get_connection()
     with connection.cursor() as cursor:
-        cursor.execute('insert into complexity_by_file select f.file_name, sum(fd.cyclomatic_complexity) from files f '
-                       'join function_details fd on fd.file_id = f.id group by 1;')
-        cursor.execute('insert into nloc_by_file select f.file_name, sum(fd.nloc) from files f join function_details '
-                       'fd on fd.file_id = f.id group by 1;')
-        cursor.execute('insert into nloc_by_repository select r.name, r.user_name, sum(f.nloc) from repository r join '
-                       'files f on f.repository_id = r.id group by 1,2;')
-        cursor.execute('insert into complexity_by_repository select r.name, r.user_name, '
+        cursor.execute(
+            'insert into complexity_by_file select f.repository_id, f.file_name, sum(fd.cyclomatic_complexity) from '
+            'files f '
+            'join function_details fd on fd.file_id = f.id where f.repository_id = %s group by 1,2;',
+            (repository_id, ))
+        cursor.execute(
+            'insert into nloc_by_file select f.repository_id, f.file_name, sum(fd.nloc) from files f join '
+            'function_details '
+            'fd on fd.file_id = f.id  where f.repository_id = %s group by 1,2;', (repository_id,))
+        cursor.execute('insert into nloc_by_repository select r.id, sum(f.nloc) from repository r join '
+                       'files f on f.repository_id = r.id group by 1;')
+        cursor.execute('insert into complexity_by_repository select r.id, '
                        'sum(fd.cyclomatic_complexity)  from repository r join files f on f.repository_id = r.id join '
-                       'function_details fd on fd.file_id = f.id group by 1,2;')
+                       'function_details fd on fd.file_id = f.id group by 1;')
     connection.commit()
 
 
@@ -122,11 +129,11 @@ def create_repository(repository, request_id, user_name):
     return get_repository(repository, user_name)[0]
 
 
-def delete_repository(repository_name, user_name):
+def update_repository_status(repository_name, user_name):
     connection = get_connection()
     with connection.cursor() as cursor:
-        sql = 'DELETE FROM repository where name = %s and user_name = %s'
-        cursor.execute(sql, (repository_name, user_name,))
+        sql = 'UPDATE repository set status = %s where name = %s and user_name = %s'
+        cursor.execute(sql, ('complete', repository_name, user_name,))
     connection.commit()
 
 
@@ -145,7 +152,6 @@ def create_file(repository_file, repository_id):
         repository_id) values (%s,%s,%s)'
         cursor.execute(sql, (repository_file.filename, repository_file.nloc, repository_id))
     connection.commit()
-    print('File created')
     return get_file(repository_file.filename)
 
 
@@ -154,7 +160,9 @@ def get_file(file_name):
     with connection.cursor() as cursor:
         sql = 'SELECT id from files where file_name = %s'
         cursor.execute(sql, (file_name,))
-        return cursor.fetchone()[0]
+        id = cursor.fetchone()[0]
+        print(id)
+        return id
 
 
 def create_functions(repository_file, file_id):

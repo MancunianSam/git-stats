@@ -7,7 +7,7 @@ interface ISelectOptions {
 }
 
 interface ISelectProps {
-  onChange: (event: React.ChangeEvent) => void;
+  onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
 }
 
 interface ISelectOptionsProps extends ISelectProps {

@@ -11,6 +11,7 @@ const ProgressBarContainer: StyledComponent<{}, {}, {}> = styled.div`
   width: 100%;
   margin: 15px;
   border-radius: 5px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
 `;
 
 const ProgressBarProgress: StyledComponent<
@@ -28,6 +29,7 @@ const ProgressBarProgress: StyledComponent<
 
 const ProgressBarPercentage: StyledComponent<{}, {}, {}> = styled.span`
   position: absolute;
+  margin-top: 3px;
   font-family: "Open Sans";
   margin-left: 5px;
 `;

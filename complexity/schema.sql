@@ -14,6 +14,7 @@ CREATE TABLE `repository` (
   `name` varchar(255) DEFAULT NULL,
   `task_id` varchar(255) DEFAULT NULL,
   `user_name` varchar(255) DEFAULT NULL,
+  `status` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 
@@ -40,23 +41,31 @@ CREATE TABLE `function_details` (
 
 
 create table complexity_by_file (
+repository_id BIGINT(20),
 file_name varchar(1000),
-cyclomatic_complexity int
+cyclomatic_complexity int,
+KEY `repository_id` (`repository_id`),
+FOREIGN KEY (`repository_id`) REFERENCES `repository` (`id`) ON DELETE CASCADE
 );
 
 create table nloc_by_file (
+repository_id BIGINT(20),
 file_name varchar(1000),
-nloc int
+nloc int,
+KEY `repository_id` (`repository_id`),
+FOREIGN KEY (`repository_id`) REFERENCES `repository` (`id`) ON DELETE CASCADE
 );
 
 create table complexity_by_repository (
-repository_name varchar(1000),
-repository_user varchar(255),
-cyclomatic_complexity int
+repository_id BIGINT(20),
+cyclomatic_complexity int,
+KEY `repository_id` (`repository_id`),
+FOREIGN KEY (`repository_id`) REFERENCES `repository` (`id`) ON DELETE CASCADE
 );
 
 create table nloc_by_repository (
-repository_name varchar(1000),
-repository_user varchar(255),
-nloc int
+repository_id BIGINT(20),
+nloc int,
+KEY `repository_id` (`repository_id`),
+FOREIGN KEY (`repository_id`) REFERENCES `repository` (`id`) ON DELETE CASCADE
 );
