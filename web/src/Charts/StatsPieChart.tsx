@@ -14,7 +14,7 @@ export const StatsPieChart: React.SFC<IBarChartProps> = props => {
         cx={200}
         cy={200}
         outerRadius={100}
-        fill="#8884d8"
+        fill="hsl(217, 94%, 31%)"
         label
       />
       {props.data2 && (
@@ -24,7 +24,7 @@ export const StatsPieChart: React.SFC<IBarChartProps> = props => {
           cy={200}
           innerRadius={80}
           outerRadius={100}
-          fill="#82ca9d"
+          fill="hsl(217, 77%, 78%)"
         />
       )}
       <Tooltip />
