@@ -7,7 +7,6 @@ from flask_socketio import join_room, SocketIO
 from flask_cors import CORS
 import json
 
-
 app = Flask(__name__)
 app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/'
 app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/'
@@ -42,7 +41,7 @@ def build_repository():
 def is_build_complete(repository_name, user_name):
     repository = get_repository(repository_name, user_name)
     if repository is not None:
-        task_id = [2]
+        task_id = repository[2]
         task = analyse_repository.AsyncResult(task_id)
         response = {
             'status': task.status,
@@ -52,7 +51,9 @@ def is_build_complete(repository_name, user_name):
             response['current'] = task.info['current']
             response['total'] = task.info['total']
         return json.dumps(response)
-
+    return json.dumps({
+        'status': 'Pending'
+    })
 
 
 @socketio.on('join')
@@ -65,6 +66,7 @@ def on_join(data):
 def analyse_repository(self, repository_name, repository_url, user_name):
     print('started')
     celerysocketio = SocketIO(message_queue='redis://localhost:6379/')
+    self.update_state(state='RUNNING', meta={'current': 0, 'total': 100})
 
     os.system('git clone ' + repository_url + base_dir + repository_name + '/')
     repository_id = create_repository(repository_name, self.request.id, user_name)
@@ -74,11 +76,12 @@ def analyse_repository(self, repository_name, repository_url, user_name):
                            exclude_pattern=['*/node_modules/*', '*/build/*'],
                            exts=lizard.get_extensions([]))
 
-    files_list = list(files)[1:50]
+    files_list = list(files)[0:200]
     for idx, repository_file in enumerate(files_list):
         celerysocketio.emit('update', {'state': 'RUNNING',
                                        'complete': ((idx if idx != 0 else idx) / len(files_list)) * 100},
                             room=self.request.id)
+        self.update_state(state='RUNNING', meta={'current': idx, 'total': len(files_list)})
 
         file_id = create_file(repository_file, repository_id)
 
@@ -90,6 +93,8 @@ def analyse_repository(self, repository_name, repository_url, user_name):
 
     celerysocketio.emit('update', {'state': 'COMPLETE', 'complete': 100},
                         room=self.request.id)
+
+    delete_repository(repository_name, user_name)
 
 
 def create_aggregate_tables():
@@ -115,6 +120,14 @@ def create_repository(repository, request_id, user_name):
     connection.commit()
     print('Repository created')
     return get_repository(repository, user_name)[0]
+
+
+def delete_repository(repository_name, user_name):
+    connection = get_connection()
+    with connection.cursor() as cursor:
+        sql = 'DELETE FROM repository where name = %s and user_name = %s'
+        cursor.execute(sql, (repository_name, user_name,))
+    connection.commit()
 
 
 def get_repository(repository, user_name):

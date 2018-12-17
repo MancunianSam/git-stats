@@ -3,14 +3,14 @@ import { Route, Router } from "react-router";
 import { Complexity } from "./Complexity";
 import { Home } from "./Home";
 import { BrowserRouter } from "react-router-dom";
-import { NavigationWithRoute } from "./GitStatsNavigation";
+import { GitStatsNavigation } from "./GitStatsNavigation";
 
 class App extends Component<{}, {}> {
   public render() {
     return (
       <BrowserRouter>
         <div className="App">
-          <NavigationWithRoute />
+          <GitStatsNavigation />
           <Route exact path="/" component={Home} />
           <Route path="/complexity" component={Complexity} />
         </div>
