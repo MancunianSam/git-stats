@@ -22,7 +22,7 @@ export class Complexity extends React.Component<{}, IComplexityState> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      complete: true,
+      complete: false,
       repository: ""
     };
   }

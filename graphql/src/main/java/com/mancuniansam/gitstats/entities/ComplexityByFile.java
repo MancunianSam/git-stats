@@ -7,7 +7,7 @@ import javax.persistence.*;
 
 @Data
 @Entity
-@Table(name="complexity_by_function")
+@Table(name="complexity_by_file")
 @SuppressWarnings("unused")
 public class ComplexityByFile {
 

@@ -1,9 +1,22 @@
-type ComplexityBar {
+type ComplexityByFunction {
 	name: String
 	nloc: Int
 	complexity: Int
 }
 
+type ComplexityByFile {
+	name: String
+	nloc: Int
+	complexity: Int
+}
+
+type ComplexityByRepository {
+	nloc: Int
+	complexity: Int
+}
+
 type Query {
-    complexityBarChart(repositoryId: Int!, limit: Int): [ComplexityBar]!
+    complexityByFunction(repositoryId: Int!): [ComplexityByFunction]!
+	complexityByFile(repositoryId: Int!): [ComplexityByFile]!
+	complexityByRepository(repositoryId: Int!): [ComplexityByRepository]!
 }
