@@ -27,7 +27,7 @@ socketio.init_app(app, message_queue=app.config['CELERY_BROKER_URL'], async_mode
 
 
 def get_connection():
-    return pymysql.connect(host='localhost', user='root', db='git_stats')
+    return pymysql.connect(host='localhost', user='root', db='git_stats', autocommit=True)
 
 
 @app.route('/repository', methods=['POST'])
@@ -103,20 +103,20 @@ def create_aggregate_tables(repository_id):
     connection = get_connection()
     with connection.cursor() as cursor:
         cursor.execute(
-            'insert into complexity_by_file select f.repository_id, f.file_name, sum(fd.cyclomatic_complexity) from '
-            'files f '
-            'join function_details fd on fd.file_id = f.id where f.repository_id = %s group by 1,2;',
-            (repository_id, ))
+            'insert into complexity_by_file select null, f.repository_id, f.file_name, sum(fd.cyclomatic_complexity), '
+            'sum(fd.nloc) from files f join function_details fd on fd.file_id = f.id where f.repository_id = %s group '
+            'by 1,2,3;',
+            (repository_id,))
         cursor.execute(
-            'insert into nloc_by_file select f.repository_id, f.file_name, sum(fd.nloc) from files f join '
-            'function_details '
-            'fd on fd.file_id = f.id  where f.repository_id = %s group by 1,2;', (repository_id,))
-        cursor.execute('insert into nloc_by_repository select r.id, sum(f.nloc) from repository r join '
-                       'files f on f.repository_id = r.id group by 1;')
-        cursor.execute('insert into complexity_by_repository select r.id, '
-                       'sum(fd.cyclomatic_complexity)  from repository r join files f on f.repository_id = r.id join '
-                       'function_details fd on fd.file_id = f.id group by 1;')
-    connection.commit()
+            'insert into complexity_by_function select null, f.repository_id, fd.name, sum(fd.cyclomatic_complexity), '
+            'sum(fd.nloc) from files f join function_details fd on fd.file_id = f.id where f.repository_id = %s group '
+            'by 1,2,3;',
+            (repository_id,))
+        cursor.execute(
+            'insert into complexity_by_repository select null, r.id, sum(fd.cyclomatic_complexity), sum(f.nloc) from '
+            'repository r join files f on f.repository_id = r.id join function_details fd on fd.file_id = f.id group '
+            'by 1,2;')
+    # connection.commit()
 
 
 def create_repository(repository, request_id, user_name):
@@ -124,7 +124,7 @@ def create_repository(repository, request_id, user_name):
     with connection.cursor() as cursor:
         sql = 'INSERT INTO repository (name, task_id, user_name) values (%s, %s, %s)'
         cursor.execute(sql, (repository, str(request_id), user_name,))
-    connection.commit()
+    # connection.commit()
     print('Repository created')
     return get_repository(repository, user_name)[0]
 
@@ -134,7 +134,7 @@ def update_repository_status(repository_name, user_name):
     with connection.cursor() as cursor:
         sql = 'UPDATE repository set status = %s where name = %s and user_name = %s'
         cursor.execute(sql, ('complete', repository_name, user_name,))
-    connection.commit()
+    # connection.commit()
 
 
 def get_repository(repository, user_name):
@@ -151,7 +151,7 @@ def create_file(repository_file, repository_id):
         sql = 'INSERT INTO files (file_name, nloc, \
         repository_id) values (%s,%s,%s)'
         cursor.execute(sql, (repository_file.filename, repository_file.nloc, repository_id))
-    connection.commit()
+    # connection.commit()
     return get_file(repository_file.filename)
 
 
@@ -175,7 +175,7 @@ def create_functions(repository_file, file_id):
             functions = [(f.name, f.nloc, f.cyclomatic_complexity, file_id,) for f in
                          repository_file.function_list]
             cursor.executemany(sql, functions)
-        connection.commit()
+        # connection.commit()
         print('Functions created')
         return connection.insert_id()
 
