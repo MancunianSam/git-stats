@@ -1,2 +1,4 @@
-.idea
+mvnw
 *.iml
+.idea/*
+mvnw.cmd

@@ -1,0 +1,9 @@
+type ComplexityBar {
+	name: String
+	nloc: Int
+	complexity: Int
+}
+
+type Query {
+    complexityBarChart(repositoryId: Int!, limit: Int): [ComplexityBar]!
+}

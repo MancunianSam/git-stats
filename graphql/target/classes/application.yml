@@ -1,0 +1,9 @@
+server:
+  port: 9000
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create
+  datasource:
+    url: jdbc:mysql://localhost:3306/git_stats
+    username: root
