@@ -2,7 +2,7 @@ import * as React from "react";
 import styled, { StyledComponent } from "@emotion/styled";
 
 import { StatsBarChart } from "./Charts/StatsBarChart";
-import { StatsPieChart } from "./Charts/StatsPieChart";
+import { StatsAreaChart } from "./Charts/StatsAreaChart";
 import { getBarData, getPie1Data, getPie2Data } from "./getData";
 import { ComplexitySelection } from "./Components/ComplexitySelection";
 
@@ -58,9 +58,11 @@ export class Complexity extends React.Component<{}, IComplexityState> {
             <span style={{ fontFamily: "Open Sans" }}>
               Top 10 Complexity and nloc by file
             </span>
-            <StatsPieChart
-              data1={getPie1Data(this.state.repository)}
-              data2={getPie2Data(this.state.repository)}
+            <StatsAreaChart
+              data={getBarData(this.state.repository)}
+              name={"name"}
+              key1={"nloc"}
+              key2={"complexity"}
             />
           </div>
         )}

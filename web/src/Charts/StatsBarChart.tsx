@@ -5,7 +5,7 @@ interface IBarChartProps {
   data: {}[];
   name: string;
   key1: string;
-  key2: string;
+  key2?: string;
 }
 export const StatsBarChart: React.SFC<IBarChartProps> = props => {
   return (
