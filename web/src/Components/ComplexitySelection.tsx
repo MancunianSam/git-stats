@@ -22,13 +22,14 @@ interface IRepositories {
 interface IComplexitySelectionState {
   repositories: IRepositories[];
   repository: string;
+  repositoryId?: number;
   percentageComplete?: number;
   loading?: boolean;
   complete?: boolean;
 }
 
 interface IComplexitySelectionProps {
-  updateParentState: (complete: boolean, repository: string) => void;
+  updateParentState: (complete: boolean, repository: number) => void;
 }
 
 interface IRepositoryDetails {
@@ -62,14 +63,14 @@ export class ComplexitySelection extends React.Component<
           loading: false,
           percentageComplete: 0
         });
-        this.props.updateParentState(true, this.state.repository);
+        this.props.updateParentState(true, this.state.repositoryId);
       }
     });
   };
 
   public loadStats: () => void = () => {
     this.setState({ loading: true });
-    this.props.updateParentState(false, this.state.repository);
+    this.props.updateParentState(false, this.state.repositoryId);
     const details: IRepositoryDetails = this.getRepositoryDetails(
       this.state.repository
     );
@@ -105,21 +106,24 @@ export class ComplexitySelection extends React.Component<
       .then(response => {
         const status: string = response.data["status"];
         const taskId: string = response.data["task_id"];
+        const repositoryId: number = response.data["repository_id"];
         if (status === "RUNNING") {
           this.getPercentageComplete(taskId);
         } else if (status === "SUCCESS") {
+          this.props.updateParentState(true, repositoryId);
           this.setState({
             loading: false,
             percentageComplete: 0,
-            complete: true
+            complete: true,
+            repositoryId: repositoryId
           });
         } else {
+          this.props.updateParentState(false, repositoryId);
           this.setState({
             loading: false,
             percentageComplete: 0,
             complete: false
           });
-          this.props.updateParentState(this.state.complete, repository);
         }
       });
   };
@@ -135,6 +139,7 @@ export class ComplexitySelection extends React.Component<
     //       }))
     //     })
     //   );
+    const repository: string = "https://github.com/MancunianSam/spectrum.git";
     this.setState({
       repositories: [
         {
@@ -146,7 +151,7 @@ export class ComplexitySelection extends React.Component<
           value: "https://github.com/MancunianSam/git-stats.git"
         }
       ],
-      repository: "https://github.com/MancunianSam/spectrum.git"
+      repository
     });
     this.checkState("https://github.com/MancunianSam/spectrum.git");
   }
@@ -157,7 +162,7 @@ export class ComplexitySelection extends React.Component<
     const repository: string = event.target.value;
     this.setState({ repository });
     this.checkState(repository);
-    this.props.updateParentState(this.state.complete, repository);
+    this.props.updateParentState(this.state.complete, this.state.repositoryId);
   };
 
   public render() {

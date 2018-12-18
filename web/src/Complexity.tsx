@@ -1,10 +1,10 @@
 import * as React from "react";
 import styled, { StyledComponent } from "@emotion/styled";
 
-import { StatsBarChart } from "./Charts/StatsBarChart";
-import { StatsAreaChart } from "./Charts/StatsAreaChart";
 import { getBarData, getPie1Data, getPie2Data } from "./getData";
 import { ComplexitySelection } from "./Components/ComplexitySelection";
+import { ChartContainer, ChartType } from "./Components/ChartContainer";
+import { COMPLEXITY_BY_FILE, COMPLEXITY_BY_FUNCTION } from "./queries/queries";
 
 const ComplexityGrid: StyledComponent<{}, {}, {}> = styled.div`
   display: grid;
@@ -16,22 +16,22 @@ const ComplexityGrid: StyledComponent<{}, {}, {}> = styled.div`
 
 interface IComplexityState {
   complete: boolean;
-  repository: string;
+  repository?: number;
 }
 export class Complexity extends React.Component<{}, IComplexityState> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      complete: false,
-      repository: ""
+      complete: false
     };
   }
 
   public updateCompleteAndRepository: (
     complete: boolean,
-    repository: string
+    repository: number
   ) => void = (complete, repository) => {
-    this.setState({ complete, repository });
+    this.setState({ complete });
+    repository && this.setState({ repository });
   };
 
   public render() {
@@ -41,30 +41,24 @@ export class Complexity extends React.Component<{}, IComplexityState> {
           updateParentState={this.updateCompleteAndRepository}
         />
         {this.state.complete && (
-          <div style={{ gridRowStart: 1, gridColumnStart: 2 }}>
-            <span style={{ fontFamily: "Open Sans" }}>
-              Top 10 Complexity and nloc by funtion
-            </span>
-            <StatsBarChart
-              data={getBarData(this.state.repository)}
-              name={"name"}
-              key1={"nloc"}
-              key2={"complexity"}
-            />
-          </div>
+          <ChartContainer
+            query={COMPLEXITY_BY_FUNCTION}
+            gridConfiguration={{ gridRowStart: 1, gridRowEnd: 2 }}
+            title="Top 10 Complexity and nloc by function"
+            chartType={ChartType.BAR}
+            repository={this.state.repository}
+            dataKey="complexityByFunction"
+          />
         )}
         {this.state.complete && (
-          <div style={{ gridRowStart: 2, gridColumnStart: 2 }}>
-            <span style={{ fontFamily: "Open Sans" }}>
-              Top 10 Complexity and nloc by file
-            </span>
-            <StatsAreaChart
-              data={getBarData(this.state.repository)}
-              name={"name"}
-              key1={"nloc"}
-              key2={"complexity"}
-            />
-          </div>
+          <ChartContainer
+            query={COMPLEXITY_BY_FILE}
+            gridConfiguration={{ gridRowStart: 2, gridRowEnd: 2 }}
+            title="Top 10 Complexity and nloc by file"
+            chartType={ChartType.AREA}
+            repository={this.state.repository}
+            dataKey="complexityByFile"
+          />
         )}
       </ComplexityGrid>
     );

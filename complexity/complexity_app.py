@@ -42,10 +42,11 @@ def is_build_complete(repository_name, user_name):
     repository = get_repository(repository_name, user_name)
     if repository is not None:
         if repository[4] == 'complete':
-            return json.dumps({'status': 'SUCCESS'})
+            return json.dumps({'repository_id': repository[0], 'status': 'SUCCESS'})
         task_id = repository[2]
         task = analyse_repository.AsyncResult(task_id)
         response = {
+            'repository_id': repository[0],
             'status': task.status,
             'task_id': task_id
         }
@@ -54,6 +55,7 @@ def is_build_complete(repository_name, user_name):
             response['total'] = task.info['total']
         return json.dumps(response)
     return json.dumps({
+        'repository_id': repository[0],
         'status': 'Pending'
     })
 
