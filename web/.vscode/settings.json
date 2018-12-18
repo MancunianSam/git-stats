@@ -1,5 +1,0 @@
-{
-    "vim.easymotion": true,
-    "vim.leader": ",",
-    "editor.formatOnSave": true
-}
