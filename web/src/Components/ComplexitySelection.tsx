@@ -105,7 +105,6 @@ export class ComplexitySelection extends React.Component<
       .then(response => {
         const status: string = response.data["status"];
         const taskId: string = response.data["task_id"];
-        let complete: boolean = true;
         if (status === "RUNNING") {
           this.getPercentageComplete(taskId);
         } else if (status === "SUCCESS") {
@@ -120,7 +119,7 @@ export class ComplexitySelection extends React.Component<
             percentageComplete: 0,
             complete: false
           });
-          this.props.updateParentState(complete, repository);
+          this.props.updateParentState(this.state.complete, repository);
         }
       });
   };
