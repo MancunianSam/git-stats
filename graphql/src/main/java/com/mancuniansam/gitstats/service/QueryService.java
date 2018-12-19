@@ -10,6 +10,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class QueryService {
@@ -26,20 +29,25 @@ public class QueryService {
 		this.complexityByRepositoryRepository = complexityByRepositoryRepository;
 	}
 
-	public List<ComplexityByFunction> complexityByFunction(Integer repositoryId) {
+	public List<ComplexityByFunction> complexityByFunction(Integer repositoryId, List<String> filters) {
 		return complexityByFunctionRepository.findTop10ByRepositoryIdOrderByComplexityDesc(repositoryId);
 	}
 
-	public List<ComplexityByFile> complexityByFile(Integer repositoryId) {
+	public List<ComplexityByFile> complexityByFile(Integer repositoryId, List<String> filters) {
 		return this.complexityByFileRepository.findTop10ByRepositoryIdOrderByComplexityDesc(repositoryId);
 	}
 
-	public List<ComplexityByRepository> complexityByRepository(Integer repositoryId) {
+	public List<ComplexityByRepository> complexityByRepository(Integer repositoryId, List<String> filters) {
 		return complexityByRepositoryRepository.findTop10ByRepositoryIdOrderByComplexityDesc(repositoryId);
 	}
 
-	public void doSomething() {
-		Collections.singletonList("".substring("".lastIndexOf("/")));
+	public Set<String> filesByFileName(String name) {
+		if (Objects.isNull(name) || name.isEmpty()) {
+			return Collections.emptySet();
+		}
+		List<ComplexityByFile> files = complexityByFileRepository.findByNameLike("%" + name + "%");
+		return files.stream()
+				.map(file -> file.getName().substring(0, file.getName().lastIndexOf("/")))
+				.collect(Collectors.toSet());
 	}
-
 }

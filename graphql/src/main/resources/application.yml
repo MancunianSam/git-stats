@@ -4,6 +4,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
+    show-sql: true
   datasource:
     url: jdbc:mysql://localhost:3306/git_stats
     username: root

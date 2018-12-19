@@ -8,6 +8,7 @@ import com.mancuniansam.gitstats.service.QueryService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 @SuppressWarnings("unused")
 @Component
@@ -19,15 +20,19 @@ public class Query implements GraphQLQueryResolver {
 		this.service = service;
 	}
 
-	public List<ComplexityByFunction> complexityByFunction(Integer repositoryId) {
-		return service.complexityByFunction(repositoryId);
+	public List<ComplexityByFunction> complexityByFunction(Integer repositoryId, List<String> filters) {
+		return service.complexityByFunction(repositoryId, filters);
 	}
 
-	public List<ComplexityByFile> complexityByFile(Integer repositoryId) {
-		return service.complexityByFile(repositoryId);
+	public List<ComplexityByFile> complexityByFile(Integer repositoryId, List<String> filters) {
+		return service.complexityByFile(repositoryId, filters);
 	}
 
-	public List<ComplexityByRepository> complexityByRepository(Integer repositoryId) {
-		return service.complexityByRepository(repositoryId);
+	public List<ComplexityByRepository> complexityByRepository(Integer repositoryId, List<String> filters) {
+		return service.complexityByRepository(repositoryId, filters);
+	}
+
+	public Set<String> searchFileName(String name) {
+		return service.filesByFileName(name);
 	}
 }
