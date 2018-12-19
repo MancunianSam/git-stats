@@ -1,11 +1,8 @@
 package com.mancuniansam.gitstats.entities;
 
 
-import lombok.Data;
-
 import javax.persistence.*;
 
-@Data
 @Entity
 @Table(name="complexity_by_repository")
 @SuppressWarnings("unused")
@@ -22,4 +19,35 @@ public class ComplexityByRepository {
 
 	private Integer complexity;
 
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public Integer getRepositoryId() {
+		return repositoryId;
+	}
+
+	public void setRepositoryId(Integer repositoryId) {
+		this.repositoryId = repositoryId;
+	}
+
+	public Integer getNloc() {
+		return nloc;
+	}
+
+	public void setNloc(Integer nloc) {
+		this.nloc = nloc;
+	}
+
+	public Integer getComplexity() {
+		return complexity;
+	}
+
+	public void setComplexity(Integer complexity) {
+		this.complexity = complexity;
+	}
 }
