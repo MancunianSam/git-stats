@@ -4,9 +4,7 @@ import com.coxautodev.graphql.tools.GraphQLQueryResolver;
 import com.mancuniansam.gitstats.entities.ComplexityByFile;
 import com.mancuniansam.gitstats.entities.ComplexityByFunction;
 import com.mancuniansam.gitstats.entities.ComplexityByRepository;
-import com.mancuniansam.gitstats.repositories.ComplexityByFileRepository;
-import com.mancuniansam.gitstats.repositories.ComplexityByFunctionRepository;
-import com.mancuniansam.gitstats.repositories.ComplexityByRepositoryRepository;
+import com.mancuniansam.gitstats.service.QueryService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -15,26 +13,21 @@ import java.util.List;
 @Component
 public class Query implements GraphQLQueryResolver {
 
-	private ComplexityByFunctionRepository complexityByFunctionRepository;
-	private ComplexityByFileRepository complexityByFileRepository;
-	private ComplexityByRepositoryRepository complexityByRepositoryRepository;
+	private QueryService service;
 
-	public Query(ComplexityByFunctionRepository complexityByFunctionRepository, ComplexityByFileRepository complexityByFileRepository, ComplexityByRepositoryRepository complexityByRepositoryRepository) {
-		this.complexityByFunctionRepository = complexityByFunctionRepository;
-		this.complexityByFileRepository = complexityByFileRepository;
-		this.complexityByRepositoryRepository = complexityByRepositoryRepository;
+	public Query(QueryService service) {
+		this.service = service;
 	}
 
-
 	public List<ComplexityByFunction> complexityByFunction(Integer repositoryId) {
-		return complexityByFunctionRepository.findTop10ByRepositoryIdOrderByComplexityDesc(repositoryId);
+		return service.complexityByFunction(repositoryId);
 	}
 
 	public List<ComplexityByFile> complexityByFile(Integer repositoryId) {
-		return complexityByFileRepository.findTop10ByRepositoryIdOrderByComplexityDesc(repositoryId);
+		return service.complexityByFile(repositoryId);
 	}
 
 	public List<ComplexityByRepository> complexityByRepository(Integer repositoryId) {
-		return complexityByRepositoryRepository.findTop10ByRepositoryIdOrderByComplexityDesc(repositoryId);
+		return service.complexityByRepository(repositoryId);
 	}
 }
