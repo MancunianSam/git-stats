@@ -3,6 +3,7 @@ import * as React from "react";
 import { FilterSuggestions } from "./FilterSuggestions";
 import { ApolloClient } from "apollo-boost";
 import { SEARCH_FILE_NAMES } from "../queries/queries";
+import styled, { StyledComponent } from "@emotion/styled";
 
 interface IChartFilterState {
   filterValue: string;
@@ -16,6 +17,36 @@ interface IChartFilterProps {
   client: ApolloClient<{}>;
   onSelectedChange: (selectedValue: string) => void;
 }
+
+interface IFilterInputProps {
+  value: string | number | string[];
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+}
+
+const FilterWrapper: StyledComponent<{}, {}, {}> = styled.div`
+  align-self: center;
+  grid-row-start: 1;
+  grid-column-start: 2;
+  width: 95%;
+`;
+
+const FilterInputBorder: StyledComponent<{}, {}, {}> = styled.div`
+  border: 2px solid hsl(217, 77%, 78%);
+`;
+
+const FilterInput: StyledComponent<IFilterInputProps, {}, {}> = styled.input`
+  height: 20px;
+  width: 90%;
+  border: none;
+`;
+
+const FilterSuggestionsWrapper: StyledComponent<{}, {}, {}> = styled.div`
+  position: absolute;
+  width: 500px;
+  height: 200px;
+  z-index: 1;
+`;
 
 export const ChartFilter: React.FunctionComponent<IChartFilterProps> = (
   props: IChartFilterProps
@@ -96,24 +127,17 @@ export const ChartFilter: React.FunctionComponent<IChartFilterProps> = (
   };
 
   return (
-    <div style={{ alignSelf: "center" }}>
+    <FilterWrapper>
       <div>Filter by folder</div>
-      <div style={{ border: "2px solid hsl(217, 77%, 78%)" }}>
-        <input
-          style={{ height: "20px", width: "95%", border: "none" }}
+      <FilterInputBorder>
+        <FilterInput
           value={state.filterValue ? state.filterValue : ""}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
         />
-      </div>
-      <div
-        style={{
-          position: "absolute",
-          width: "500px",
-          height: "200px",
-          zIndex: 1
-        }}
-      >
+      </FilterInputBorder>
+      <div>{state.selectedValue}</div>
+      <FilterSuggestionsWrapper>
         {state.filterValue.length > 2 && (
           <FilterSuggestions
             onclick={onClick}
@@ -121,7 +145,7 @@ export const ChartFilter: React.FunctionComponent<IChartFilterProps> = (
             results={state.suggestions}
           />
         )}
-      </div>
-    </div>
+      </FilterSuggestionsWrapper>
+    </FilterWrapper>
   );
 };

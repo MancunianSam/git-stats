@@ -52,15 +52,11 @@ export class Complexity extends React.Component<{}, IComplexityState> {
         <ApolloConsumer>
           {client => {
             return (
-              <div
-                style={{ gridRowStart: 1, gridColumnStart: 2, width: "95%" }}
-              >
-                <ChartFilter
-                  repositoryId={this.state.repository}
-                  client={client}
-                  onSelectedChange={this.onSelectedChange}
-                />
-              </div>
+              <ChartFilter
+                repositoryId={this.state.repository}
+                client={client}
+                onSelectedChange={this.onSelectedChange}
+              />
             );
           }}
         </ApolloConsumer>
