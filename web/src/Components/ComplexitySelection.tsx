@@ -84,6 +84,10 @@ export class ComplexitySelection extends React.Component<
       });
   };
 
+  public downloadFile: () => void = () => {
+    axios.get(`http://localhost:9000/download/${this.state.repositoryId}`);
+  };
+
   public checkState: (repository: string) => void = repository => {
     const details: IRepositoryDetails = getRepositoryDetails(repository);
     axios
@@ -163,6 +167,7 @@ export class ComplexitySelection extends React.Component<
         <Button onClick={this.loadStats}>
           {this.state.complete ? "Regenerate" : "Generate"} Complexity Stats
         </Button>
+        <Button onClick={this.downloadFile}>Download</Button>
         {this.state.loading && (
           <ProgressBar width={this.state.percentageComplete} />
         )}

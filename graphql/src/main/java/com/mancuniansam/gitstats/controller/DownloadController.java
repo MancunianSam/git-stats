@@ -3,6 +3,7 @@ package com.mancuniansam.gitstats.controller;
 import com.mancuniansam.gitstats.service.ComplexityDownloadService;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -19,6 +20,7 @@ public class DownloadController {
 	}
 
 	@RequestMapping("/download/{repositoryId}")
+	@CrossOrigin(origins = "http://localhost:3000")
 	public void downlod(@PathVariable("repositoryId") Long repositoryId, HttpServletResponse response) throws IOException {
 		Workbook wb = complexityDownloadService.createComplexityWorkbook(repositoryId);
 		response.setHeader("Content-disposition", "attachment; filename=test.xls");
