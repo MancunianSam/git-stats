@@ -16,8 +16,8 @@ type ComplexityByRepository {
 }
 
 type Query {
-    complexityByFunction(repositoryId: Int!, filters: [String]): [ComplexityByFunction]!
-	complexityByFile(repositoryId: Int!, filters: [String]): [ComplexityByFile]!
-	complexityByRepository(repositoryId: Int!, filters: [String]): [ComplexityByRepository]!
-	searchFileName(name: String): [String]!
+    complexityByFunction(repositoryId: Int!, filePath: String): [ComplexityByFunction]!
+	complexityByFile(repositoryId: Int!, filePath: String): [ComplexityByFile]!
+	complexityByRepository(repositoryId: Int!): [ComplexityByRepository]!
+	searchFileName(repositoryId: Int!, name: String): [String]!
 }

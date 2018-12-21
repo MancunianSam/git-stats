@@ -10,9 +10,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static java.util.Objects.isNull;
 
 @Component
 public class QueryService {
@@ -29,25 +30,37 @@ public class QueryService {
 		this.complexityByRepositoryRepository = complexityByRepositoryRepository;
 	}
 
-	public List<ComplexityByFunction> complexityByFunction(Integer repositoryId, List<String> filters) {
-		return complexityByFunctionRepository.findTop10ByRepositoryIdOrderByComplexityDesc(repositoryId);
+	public List<ComplexityByFunction> complexityByFunction(Long repositoryId, String filePath) {
+		if(isNull(filePath)) {
+			return complexityByFunctionRepository
+					.findTop10ByRepository_IdOrderByComplexityDesc(repositoryId);
+		}
+		return complexityByFunctionRepository
+				.findTop10ByRepository_IdAndFunction_File_FilePathOrderByComplexityDesc(repositoryId, filePath);
 	}
 
-	public List<ComplexityByFile> complexityByFile(Integer repositoryId, List<String> filters) {
-		return this.complexityByFileRepository.findTop10ByRepositoryIdOrderByComplexityDesc(repositoryId);
+	public List<ComplexityByFile> complexityByFile(Long repositoryId, String filePath) {
+		if(isNull(filePath)) {
+			return this.complexityByFileRepository
+					.findTop10ByRepository_IdOrderByComplexityDesc(repositoryId);
+		}
+		return this.complexityByFileRepository
+				.findTop10ByRepository_IdAndFile_filePathOrderByComplexityDesc(repositoryId, filePath);
 	}
 
-	public List<ComplexityByRepository> complexityByRepository(Integer repositoryId, List<String> filters) {
-		return complexityByRepositoryRepository.findTop10ByRepositoryIdOrderByComplexityDesc(repositoryId);
+	public List<ComplexityByRepository> complexityByRepository(Long repositoryId) {
+		return complexityByRepositoryRepository.findTop10ByRepository_IdOrderByComplexityDesc(repositoryId);
 	}
 
-	public Set<String> filesByFileName(String name) {
-		if (Objects.isNull(name) || name.isEmpty()) {
+	public Set<String> filesByFileName(Long repositoryId, String name) {
+		if (isNull(name) || name.isEmpty()) {
 			return Collections.emptySet();
 		}
-		List<ComplexityByFile> files = complexityByFileRepository.findByNameLike("%" + name + "%");
+		List<ComplexityByFile> files = complexityByFileRepository
+				.findByRepository_IdAndFile_FilePathLike(repositoryId, "%" + name + "%");
+
 		return files.stream()
-				.map(file -> file.getName().substring(0, file.getName().lastIndexOf("/")))
+				.map(ComplexityByFile::getFilePath)
 				.collect(Collectors.toSet());
 	}
 }

@@ -20,19 +20,19 @@ public class Query implements GraphQLQueryResolver {
 		this.service = service;
 	}
 
-	public List<ComplexityByFunction> complexityByFunction(Integer repositoryId, List<String> filters) {
-		return service.complexityByFunction(repositoryId, filters);
+	public List<ComplexityByFunction> complexityByFunction(Long repositoryId, String filePath) {
+		return service.complexityByFunction(repositoryId, filePath);
 	}
 
-	public List<ComplexityByFile> complexityByFile(Integer repositoryId, List<String> filters) {
-		return service.complexityByFile(repositoryId, filters);
+	public List<ComplexityByFile> complexityByFile(Long repositoryId, String filePath) {
+		return service.complexityByFile(repositoryId, filePath);
 	}
 
-	public List<ComplexityByRepository> complexityByRepository(Integer repositoryId, List<String> filters) {
-		return service.complexityByRepository(repositoryId, filters);
+	public List<ComplexityByRepository> complexityByRepository(Long repositoryId) {
+		return service.complexityByRepository(repositoryId);
 	}
 
-	public Set<String> searchFileName(String name) {
-		return service.filesByFileName(name);
+	public Set<String> searchFileName(Long repositoryId, String name) {
+		return service.filesByFileName(repositoryId, name);
 	}
 }

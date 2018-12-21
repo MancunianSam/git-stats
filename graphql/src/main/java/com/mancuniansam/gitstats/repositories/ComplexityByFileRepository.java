@@ -8,7 +8,9 @@ import java.util.List;
 
 public interface ComplexityByFileRepository extends CrudRepository<ComplexityByFile, Long> {
 
-	List<ComplexityByFile> findTop10ByRepositoryIdOrderByComplexityDesc(Integer repositoryId);
+	List<ComplexityByFile> findTop10ByRepository_IdOrderByComplexityDesc(Long repositoryId);
 
-	List<ComplexityByFile> findByNameLike(String name);
+	List<ComplexityByFile> findTop10ByRepository_IdAndFile_filePathOrderByComplexityDesc(Long repositoryId, String filePath);
+
+	List<ComplexityByFile> findByRepository_IdAndFile_FilePathLike(Long repositoryId, String name);
 }
