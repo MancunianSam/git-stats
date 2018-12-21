@@ -1,22 +1,26 @@
 import * as React from "react";
 import styled, { StyledComponent } from "@emotion/styled";
 
-import { getBarData, getPie1Data, getPie2Data } from "./getData";
 import { ComplexitySelection } from "./Components/ComplexitySelection";
 import { ChartContainer, ChartType } from "./Components/ChartContainer";
+import { ChartFilter } from "./Components/ChartFilter";
 import { COMPLEXITY_BY_FILE, COMPLEXITY_BY_FUNCTION } from "./queries/queries";
+import { ApolloConsumer } from "react-apollo";
 
 const ComplexityGrid: StyledComponent<{}, {}, {}> = styled.div`
   display: grid;
   grid-template-columns: 300px 1fr;
-  grid-template-rows: repeat(2, 2fr);
+  grid-template-rows: 200px repeat(2, 2fr);
   font-family: Open Sans;
   justify-items: flex-start;
+  align-items: center;
 `;
 
 interface IComplexityState {
   complete: boolean;
   repository?: number;
+  filterValue?: string;
+  selectedValue?: string;
 }
 export class Complexity extends React.Component<{}, IComplexityState> {
   constructor(props: {}) {
@@ -30,34 +34,57 @@ export class Complexity extends React.Component<{}, IComplexityState> {
     complete: boolean,
     repository: number
   ) => void = (complete, repository) => {
-    this.setState({ complete });
+    this.setState({ complete, selectedValue: null });
     repository && this.setState({ repository });
+  };
+
+  public onSelectedChange: (selectedValue: string) => void = selectedValue => {
+    this.setState({ selectedValue });
   };
 
   public render() {
     return (
       <ComplexityGrid>
+        <span>{this.state.filterValue}</span>
         <ComplexitySelection
           updateParentState={this.updateCompleteAndRepository}
         />
+        <ApolloConsumer>
+          {client => {
+            return (
+              <div
+                style={{ gridRowStart: 1, gridColumnStart: 2, width: "95%" }}
+              >
+                <ChartFilter
+                  repositoryId={this.state.repository}
+                  client={client}
+                  onSelectedChange={this.onSelectedChange}
+                />
+              </div>
+            );
+          }}
+        </ApolloConsumer>
+
         {this.state.complete && (
           <ChartContainer
             query={COMPLEXITY_BY_FUNCTION}
-            gridConfiguration={{ gridRowStart: 1, gridRowEnd: 2 }}
+            gridConfiguration={{ gridRowStart: 2, gridColumnStart: 2 }}
             title="Top 10 Complexity and nloc by function"
             chartType={ChartType.BAR}
             repository={this.state.repository}
             dataKey="complexityByFunction"
+            filePath={this.state.selectedValue}
           />
         )}
         {this.state.complete && (
           <ChartContainer
             query={COMPLEXITY_BY_FILE}
-            gridConfiguration={{ gridRowStart: 2, gridRowEnd: 2 }}
+            gridConfiguration={{ gridRowStart: 3, gridColumnStart: 2 }}
             title="Top 10 Complexity and nloc by file"
             chartType={ChartType.AREA}
             repository={this.state.repository}
             dataKey="complexityByFile"
+            filePath={this.state.selectedValue}
           />
         )}
       </ComplexityGrid>

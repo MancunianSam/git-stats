@@ -18,9 +18,9 @@ const SelectContainer: StyledComponent<{}, {}, {}> = styled.div`
   background: url(http://i62.tinypic.com/15xvbd5.png) no-repeat 96% 0;
   height: 29px;
   overflow: hidden;
-  width: 240px;
   border-radius: 5px;
   background-color: hsl(217, 77%, 78%);
+  width: 240px;
   margin: 10px;
 `;
 
@@ -30,7 +30,7 @@ const SelectDropDown: StyledComponent<ISelectProps, {}, {}> = styled.select`
   font-size: 14px;
   height: 29px;
   padding: 5px;
-  width: 268px;
+  width: 95%;
   color: #fff;
 `;
 

@@ -6,11 +6,13 @@ import io from "socket.io-client";
 import { ProgressBar } from "../Components/ProgressBar";
 import { Select } from "../Components/Select";
 import { Button } from "../Components/Button";
+import { getRepositoryDetails, IRepositoryDetails } from "../utils/utils";
 
 const StyledComplexitySelection: StyledComponent<{}, {}, {}> = styled.div`
   display: flex;
   flex-direction: column;
   padding: 15px;
+  grid-row-start: 1;
   grid-column-start: 1;
   align-items: center;
 `;
@@ -32,11 +34,6 @@ interface IComplexitySelectionProps {
   updateParentState: (complete: boolean, repository: number) => void;
 }
 
-interface IRepositoryDetails {
-  url: string;
-  name: string;
-  userName: string;
-}
 export class ComplexitySelection extends React.Component<
   IComplexitySelectionProps,
   IComplexitySelectionState
@@ -58,12 +55,14 @@ export class ComplexitySelection extends React.Component<
       console.log(response);
       this.setState({ percentageComplete: response["complete"] });
       if (response["state"] === "SUCCESS") {
+        const repositoryId: number = response["repositoryId"];
         socket.close();
         this.setState({
           loading: false,
-          percentageComplete: 0
+          percentageComplete: 0,
+          repositoryId
         });
-        this.props.updateParentState(true, this.state.repositoryId);
+        this.props.updateParentState(true, repositoryId);
       }
     });
   };
@@ -71,7 +70,7 @@ export class ComplexitySelection extends React.Component<
   public loadStats: () => void = () => {
     this.setState({ loading: true });
     this.props.updateParentState(false, this.state.repositoryId);
-    const details: IRepositoryDetails = this.getRepositoryDetails(
+    const details: IRepositoryDetails = getRepositoryDetails(
       this.state.repository
     );
     axios
@@ -85,20 +84,8 @@ export class ComplexitySelection extends React.Component<
       });
   };
 
-  public getRepositoryDetails: (
-    respoitoryUrl: string
-  ) => IRepositoryDetails = repository => {
-    const re = new RegExp("https://github.com/(.*)/(.*).git");
-    const results = re.exec(repository);
-    return {
-      url: results[0],
-      name: results[2],
-      userName: results[1]
-    };
-  };
-
   public checkState: (repository: string) => void = repository => {
-    const details: IRepositoryDetails = this.getRepositoryDetails(repository);
+    const details: IRepositoryDetails = getRepositoryDetails(repository);
     axios
       .get(
         `http://localhost:5000/repository/${details.name}/${details.userName}`
@@ -139,21 +126,21 @@ export class ComplexitySelection extends React.Component<
     //       }))
     //     })
     //   );
-    const repository: string = "https://github.com/MancunianSam/spectrum.git";
+    const repository: string = "https://github.com/MancunianSam/git-stats.git";
     this.setState({
       repositories: [
         {
-          label: "spectrum",
-          value: "https://github.com/MancunianSam/spectrum.git"
-        },
-        {
           label: "git_stats",
           value: "https://github.com/MancunianSam/git-stats.git"
+        },
+        {
+          label: "spectrum",
+          value: "https://github.com/MancunianSam/spectrum.git"
         }
       ],
       repository
     });
-    this.checkState("https://github.com/MancunianSam/spectrum.git");
+    this.checkState(repository);
   }
 
   public handleRepositoryChange: (

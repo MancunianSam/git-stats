@@ -7,7 +7,7 @@ import { StatsAreaChart } from "../Charts/StatsAreaChart";
 
 interface IGridConfiguration {
   gridRowStart: number;
-  gridRowEnd: number;
+  gridColumnStart: number;
 }
 
 interface IChartContainerProps {
@@ -17,6 +17,7 @@ interface IChartContainerProps {
   chartType: ChartType;
   repository: number;
   dataKey: string;
+  filePath?: string;
 }
 
 interface ICommonProps {
@@ -52,7 +53,10 @@ const getChart: (chartType: ChartType, query: DocumentNode) => JSX.Element = (
 
 export const ChartContainer: React.SFC<IChartContainerProps> = props => {
   return (
-    <Query query={props.query} variables={{ repositoryId: props.repository }}>
+    <Query
+      query={props.query}
+      variables={{ repositoryId: props.repository, filePath: props.filePath }}
+    >
       {({ loading, error, data }) => {
         if (loading) return "Loading";
         if (error) return `Error ${error.message}`;
@@ -60,7 +64,7 @@ export const ChartContainer: React.SFC<IChartContainerProps> = props => {
           <div
             style={{
               gridRowStart: props.gridConfiguration.gridRowStart,
-              gridColumnStart: props.gridConfiguration.gridRowEnd
+              gridColumnStart: props.gridConfiguration.gridColumnStart
             }}
           >
             <span style={{ fontFamily: "Open Sans" }}>{props.title}</span>
