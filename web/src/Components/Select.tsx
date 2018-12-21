@@ -30,7 +30,7 @@ const SelectDropDown: StyledComponent<ISelectProps, {}, {}> = styled.select`
   font-size: 14px;
   height: 29px;
   padding: 5px;
-  width: 95%;
+  width: 100%;
   color: #fff;
 `;
 

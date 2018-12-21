@@ -160,7 +160,9 @@ export class ComplexitySelection extends React.Component<
           options={this.state.repositories}
           onChange={this.handleRepositoryChange}
         />
-        <Button onClick={this.loadStats}>Generate Complexity Stats</Button>
+        <Button onClick={this.loadStats}>
+          {this.state.complete ? "Regenerate" : "Generate"} Complexity Stats
+        </Button>
         {this.state.loading && (
           <ProgressBar width={this.state.percentageComplete} />
         )}
