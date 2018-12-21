@@ -30,26 +30,34 @@ public class QueryService {
 		this.complexityByRepositoryRepository = complexityByRepositoryRepository;
 	}
 
+	public List<ComplexityByFunction> complexityByFunction(Long repositoryId) {
+		return complexityByFunction(repositoryId, null);
+	}
+
 	public List<ComplexityByFunction> complexityByFunction(Long repositoryId, String filePath) {
 		if(isNull(filePath)) {
 			return complexityByFunctionRepository
-					.findTop10ByRepository_IdOrderByComplexityDesc(repositoryId);
+					.findByRepository_IdOrderByComplexityDesc(repositoryId);
 		}
 		return complexityByFunctionRepository
-				.findTop10ByRepository_IdAndFunction_File_FilePathOrderByComplexityDesc(repositoryId, filePath);
+				.findByRepository_IdAndFunction_File_FilePathOrderByComplexityDesc(repositoryId, filePath);
+	}
+
+	public List<ComplexityByFile> complexityByFile(Long repositoryId) {
+		return complexityByFile(repositoryId, null);
 	}
 
 	public List<ComplexityByFile> complexityByFile(Long repositoryId, String filePath) {
 		if(isNull(filePath)) {
 			return this.complexityByFileRepository
-					.findTop10ByRepository_IdOrderByComplexityDesc(repositoryId);
+					.findByRepository_IdOrderByComplexityDesc(repositoryId);
 		}
 		return this.complexityByFileRepository
-				.findTop10ByRepository_IdAndFile_filePathOrderByComplexityDesc(repositoryId, filePath);
+				.findByRepository_IdAndFile_filePathOrderByComplexityDesc(repositoryId, filePath);
 	}
 
 	public List<ComplexityByRepository> complexityByRepository(Long repositoryId) {
-		return complexityByRepositoryRepository.findTop10ByRepository_IdOrderByComplexityDesc(repositoryId);
+		return complexityByRepositoryRepository.findByRepository_IdOrderByComplexityDesc(repositoryId);
 	}
 
 	public Set<String> filesByFileName(Long repositoryId, String name) {
