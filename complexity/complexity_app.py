@@ -55,7 +55,6 @@ def is_build_complete(repository_name, user_name):
             response['total'] = task.info['total']
         return json.dumps(response)
     return json.dumps({
-        'repository_id': repository[0],
         'status': 'Pending'
     })
 
@@ -77,17 +76,19 @@ def analyse_repository(self, repository_name, repository_url, user_name):
     print(self.request.id)
 
     files = lizard.analyze(paths=[base_dir + repository_name],
-                           exclude_pattern=['*/node_modules/*', '*/build/*'],
+                           exclude_pattern=['*/node_modules/*', '*/build/*', '*/build-api/*'],
                            exts=lizard.get_extensions([]))
 
-    files_list = list(files)[0:100]
+    files_list = list(files)
     for idx, repository_file in enumerate(files_list):
         celerysocketio.emit('update', {'state': 'RUNNING',
-                                       'complete': ((idx if idx != 0 else idx) / len(files_list)) * 100},
+                                       'complete': ((idx if idx != 0 else idx) / len(files_list)) * 100,
+                                       'repositoryId': repository_id,
+                                       },
                             room=self.request.id)
         self.update_state(state='RUNNING', meta={'current': idx, 'total': len(files_list)})
 
-        file_id = create_file(repository_file, repository_id)
+        file_id = create_file(repository_name, repository_file, repository_id)
 
         create_functions(repository_file, file_id)
 
@@ -95,30 +96,41 @@ def analyse_repository(self, repository_name, repository_url, user_name):
 
     create_aggregate_tables(repository_id)
 
-    celerysocketio.emit('update', {'state': 'SUCCESS', 'complete': 100},
+    celerysocketio.emit('update', {'state': 'SUCCESS', 'complete': 100,
+                                   'repositoryId': repository_id
+                                   },
                         room=self.request.id)
 
     update_repository_status(repository_name, user_name)
 
 
+def path_to_dict(path):
+    if 'node_modules' not in path:
+        d = {'module': os.path.basename(path)}
+        if os.path.isdir(path):
+            d['children'] = [path_to_dict(os.path.join(path, x)) for x in os.listdir(path)]
+            d['collapsed'] = True
+        return d
+
+
 def create_aggregate_tables(repository_id):
     connection = get_connection()
+    print(repository_id)
     with connection.cursor() as cursor:
         cursor.execute(
-            'insert into complexity_by_file select null, f.repository_id, f.file_name, sum(fd.cyclomatic_complexity), '
+            'insert into complexity_by_file select null, f.repository_id, f.id, sum(fd.complexity), '
             'sum(fd.nloc) from files f join function_details fd on fd.file_id = f.id where f.repository_id = %s group '
             'by 1,2,3;',
             (repository_id,))
         cursor.execute(
-            'insert into complexity_by_function select null, f.repository_id, fd.name, sum(fd.cyclomatic_complexity), '
+            'insert into complexity_by_function select null, f.repository_id, fd.id, sum(fd.complexity), '
             'sum(fd.nloc) from files f join function_details fd on fd.file_id = f.id where f.repository_id = %s group '
             'by 1,2,3;',
             (repository_id,))
         cursor.execute(
-            'insert into complexity_by_repository select null, r.id, sum(fd.cyclomatic_complexity), sum(f.nloc) from '
+            'insert into complexity_by_repository select null, r.id, sum(fd.complexity), sum(f.nloc) from '
             'repository r join files f on f.repository_id = r.id join function_details fd on fd.file_id = f.id group '
             'by 1,2;')
-    # connection.commit()
 
 
 def create_repository(repository, request_id, user_name):
@@ -126,7 +138,6 @@ def create_repository(repository, request_id, user_name):
     with connection.cursor() as cursor:
         sql = 'INSERT INTO repository (name, task_id, user_name) values (%s, %s, %s)'
         cursor.execute(sql, (repository, str(request_id), user_name,))
-    # connection.commit()
     print('Repository created')
     return get_repository(repository, user_name)[0]
 
@@ -136,7 +147,6 @@ def update_repository_status(repository_name, user_name):
     with connection.cursor() as cursor:
         sql = 'UPDATE repository set status = %s where name = %s and user_name = %s'
         cursor.execute(sql, ('complete', repository_name, user_name,))
-    # connection.commit()
 
 
 def get_repository(repository, user_name):
@@ -147,23 +157,24 @@ def get_repository(repository, user_name):
         return cursor.fetchone()
 
 
-def create_file(repository_file, repository_id):
+def create_file(repository_name, repository_file, repository_id):
     connection = get_connection()
+    file_with_path = repository_file.filename
+    file_name = file_with_path[file_with_path.rfind('/') + 1:]
+    file_path = file_with_path[:file_with_path.rfind('/') * 1].replace(base_dir, '', 1).replace(repository_name, '', 1)
     with connection.cursor() as cursor:
-        sql = 'INSERT INTO files (file_name, nloc, \
-        repository_id) values (%s,%s,%s)'
-        cursor.execute(sql, (repository_file.filename, repository_file.nloc, repository_id))
-    # connection.commit()
-    return get_file(repository_file.filename)
+        sql = 'INSERT INTO files (file_path, file_name, nloc, \
+        repository_id) values (%s,%s,%s,%s)'
+        cursor.execute(sql, (file_path, file_name, repository_file.nloc, repository_id,))
+    return get_file(file_name, file_path)
 
 
-def get_file(file_name):
+def get_file(file_name, file_path):
     connection = get_connection()
     with connection.cursor() as cursor:
-        sql = 'SELECT id from files where file_name = %s'
-        cursor.execute(sql, (file_name,))
+        sql = 'SELECT id from files where file_name = %s AND file_path = %s'
+        cursor.execute(sql, (file_name, file_path,))
         id = cursor.fetchone()[0]
-        print(id)
         return id
 
 
@@ -171,13 +182,12 @@ def create_functions(repository_file, file_id):
     if len(repository_file.function_list) > 0:
         connection = get_connection()
         with connection.cursor() as cursor:
-            sql = 'INSERT INTO function_details (name, nloc, cyclomatic_complexity,\
+            sql = 'INSERT INTO function_details (name, nloc, complexity,\
             file_id) values (%s,%s,%s,%s)'
 
             functions = [(f.name, f.nloc, f.cyclomatic_complexity, file_id,) for f in
                          repository_file.function_list]
             cursor.executemany(sql, functions)
-        # connection.commit()
         print('Functions created')
         return connection.insert_id()
 
