@@ -12,10 +12,13 @@ public class ComplexityByFunction {
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private Long id;
 
-	@Column(name = "repository_id")
-	private Integer repositoryId;
+	@ManyToOne
+	@JoinColumn(name = "repository_id")
+	private Repository repository;
 
-	private String name;
+	@ManyToOne
+	@JoinColumn(name = "function_id")
+	private FunctionDetails function;
 
 	private Integer nloc;
 
@@ -29,24 +32,24 @@ public class ComplexityByFunction {
 		this.id = id;
 	}
 
-	public Integer getRepositoryId() {
-		return repositoryId;
-	}
-
-	public void setRepositoryId(Integer repositoryId) {
-		this.repositoryId = repositoryId;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
 	public Integer getNloc() {
 		return nloc;
+	}
+
+	public Repository getRepository() {
+		return repository;
+	}
+
+	public void setRepository(Repository repository) {
+		this.repository = repository;
+	}
+
+	public FunctionDetails getFunction() {
+		return function;
+	}
+
+	public void setFunction(FunctionDetails function) {
+		this.function = function;
 	}
 
 	public void setNloc(Integer nloc) {
@@ -59,5 +62,9 @@ public class ComplexityByFunction {
 
 	public void setComplexity(Integer complexity) {
 		this.complexity = complexity;
+	}
+
+	public String getName() {
+		return this.function.getName();
 	}
 }

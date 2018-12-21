@@ -1,24 +1,26 @@
 package com.mancuniansam.gitstats.entities;
 
-
 import javax.persistence.*;
 
 @Entity
-@Table(name="complexity_by_repository")
+@Table(name="function_details")
 @SuppressWarnings("unused")
-public class ComplexityByRepository {
+public class FunctionDetails {
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private Long id;
 
-	@ManyToOne
-	@JoinColumn(name = "repository_id")
-	private Repository repository;
+	private String name;
 
 	private Integer nloc;
 
+	@Column(name = "complexity")
 	private Integer complexity;
+
+	@ManyToOne
+	@JoinColumn(name = "file_id")
+	private Files file;
 
 	public Long getId() {
 		return id;
@@ -26,6 +28,14 @@ public class ComplexityByRepository {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public Integer getNloc() {
@@ -42,5 +52,13 @@ public class ComplexityByRepository {
 
 	public void setComplexity(Integer complexity) {
 		this.complexity = complexity;
+	}
+
+	public Files getFile() {
+		return file;
+	}
+
+	public void setFile(Files file) {
+		this.file = file;
 	}
 }

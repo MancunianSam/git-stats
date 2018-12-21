@@ -12,10 +12,13 @@ public class ComplexityByFile {
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private Long id;
 
-	@Column(name = "repository_id")
-	private Integer repositoryId;
+	@ManyToOne
+	@JoinColumn(name = "repository_id")
+	private Repository repository;
 
-	private String name;
+	@ManyToOne
+	@JoinColumn(name = "file_id")
+	private Files file;
 
 	private Integer nloc;
 
@@ -30,20 +33,20 @@ public class ComplexityByFile {
 		this.id = id;
 	}
 
-	public Integer getRepositoryId() {
-		return repositoryId;
+	public Repository getRepository() {
+		return repository;
 	}
 
-	public void setRepositoryId(Integer repositoryId) {
-		this.repositoryId = repositoryId;
+	public void setRepository(Repository repository) {
+		this.repository = repository;
 	}
 
-	public String getName() {
-		return name;
+	public Files getFile() {
+		return file;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setFile(Files file) {
+		this.file = file;
 	}
 
 	public Integer getNloc() {
@@ -60,5 +63,13 @@ public class ComplexityByFile {
 
 	public void setComplexity(Integer complexity) {
 		this.complexity = complexity;
+	}
+
+	public String getFilePath() {
+		return this.file.getFilePath();
+	}
+
+	public String getName() {
+		return this.file.getFileName();
 	}
 }
