@@ -2,11 +2,13 @@ import * as React from "react";
 import styled, { StyledComponent } from "@emotion/styled";
 
 interface IButtonProps {
-  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  type: string;
 }
 
 interface IButtonInputProps {
-  onClick: () => void;
+  onClick?: () => void;
+  type?: string;
 }
 
 const StyledButton: StyledComponent<IButtonProps, {}, {}> = styled.button`
@@ -21,9 +23,11 @@ const StyledButton: StyledComponent<IButtonProps, {}, {}> = styled.button`
 `;
 
 export const Button: React.SFC<IButtonInputProps> = props => {
-  return (
-    <StyledButton onClick={() => props.onClick()}>
+  return props.onClick ? (
+    <StyledButton type={props.type} onClick={() => props.onClick()}>
       {props.children}
     </StyledButton>
+  ) : (
+    <StyledButton type={props.type}>{props.children}</StyledButton>
   );
 };

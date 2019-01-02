@@ -3,10 +3,7 @@ package com.mancuniansam.gitstats.service;
 import com.mancuniansam.gitstats.entities.ComplexityAggregates;
 import com.mancuniansam.gitstats.entities.ComplexityByFile;
 import com.mancuniansam.gitstats.entities.ComplexityByFunction;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
@@ -76,6 +73,8 @@ public class ComplexityDownloadService {
 		int headerCount = 0;
 		for(String header: fileDescription.keySet()) {
 			Cell cell = headerRow.createCell(headerCount);
+			CellStyle cellStyle = getBoldStyle(wb);
+			cell.setCellStyle(cellStyle);
 			cell.setCellValue(header);
 			headerCount++;
 		}
@@ -89,6 +88,15 @@ public class ComplexityDownloadService {
 				cellCount++;
 			}
 		}
+	}
+
+	@NotNull
+	private CellStyle getBoldStyle(Workbook wb) {
+		CellStyle cellStyle = wb.createCellStyle();
+		Font font = wb.createFont();
+		font.setBold(true);
+		cellStyle.setFont(font);
+		return cellStyle;
 	}
 
 	private static class ComplexityConfiguration<T extends ComplexityAggregates> {
