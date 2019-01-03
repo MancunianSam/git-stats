@@ -1,6 +1,5 @@
 import * as express from "express";
 import * as http from "http";
-import * as redis from "redis";
 import { promisify } from "util";
 import { v4 } from "uuid";
 import * as socketio from "socket.io";
@@ -8,11 +7,6 @@ import * as socketio from "socket.io";
 const app: express.Application = express();
 const httpApp: http.Server = new http.Server(app);
 const port: number = 3000;
-const client: redis.RedisClient = redis.createClient();
-
-const getAsync: (arg: string) => Promise<string> = promisify(client.get).bind(
-  client
-);
 
 const server: any = httpApp.listen(port, () =>
   console.log(`App listening on port ${port}`)
