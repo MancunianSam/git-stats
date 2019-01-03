@@ -5,13 +5,6 @@ import { ApolloClient } from "apollo-boost";
 import { SEARCH_FILE_NAMES } from "../queries/queries";
 import styled, { StyledComponent } from "@emotion/styled";
 
-interface IChartFilterState {
-  filterValue: string;
-  selectedIndex?: number;
-  selectedValue?: string;
-  suggestions: string[];
-}
-
 interface IChartFilterProps {
   repositoryId: number;
   client: ApolloClient<{}>;
@@ -51,10 +44,25 @@ const FilterSuggestionsWrapper: StyledComponent<{}, {}, {}> = styled.div`
 export const ChartFilter: React.FunctionComponent<IChartFilterProps> = (
   props: IChartFilterProps
 ) => {
-  const [state, setState]: [
-    IChartFilterState,
-    React.Dispatch<IChartFilterState>
-  ] = React.useState({ suggestions: [], filterValue: "" });
+  const [suggestions, setSuggestions]: [
+    string[],
+    React.Dispatch<string[]>
+  ] = React.useState<string[]>([]);
+
+  const [filterValue, setFilterValue]: [
+    string,
+    React.Dispatch<string>
+  ] = React.useState<string>("");
+
+  const [selectedIndex, setSelectedIndex]: [
+    number,
+    React.Dispatch<number>
+  ] = React.useState<number>(0);
+
+  const [selectedValue, setSelectedValue]: [
+    string,
+    React.Dispatch<string>
+  ] = React.useState<string>("");
 
   const handleInputChange: (
     event: React.ChangeEvent<HTMLInputElement>
@@ -66,63 +74,38 @@ export const ChartFilter: React.FunctionComponent<IChartFilterProps> = (
         variables: { repositoryId: props.repositoryId, name: filterValue }
       })
       .then(data => {
-        setState({
-          suggestions: data.data["searchFileName"],
-          filterValue,
-          selectedIndex: 0
-        });
+        setSuggestions(data.data["searchFileName"]);
+        setFilterValue(filterValue);
+        setSelectedIndex(0);
       });
   };
 
   const handleKeyDown: (
     event: React.KeyboardEvent<HTMLInputElement>
   ) => void = event => {
-    const suggestions: string[] = state.suggestions;
-    const selectedIndex: number = state.selectedIndex ? state.selectedIndex : 0;
     if (event.keyCode === 13) {
-      const selectedValue: string = suggestions[state.selectedIndex - 1];
-      setState({
-        filterValue: "",
-        selectedIndex: state.selectedIndex,
-        suggestions,
-        selectedValue
-      });
+      setFilterValue("");
+      setSelectedValue(suggestions[selectedIndex - 1]);
       props.onSelectedChange(selectedValue);
     } else if (event.keyCode === 40) {
-      if (
-        state.selectedIndex < 0 ||
-        state.selectedIndex >= state.suggestions.length
-      ) {
+      if (selectedIndex < 0 || selectedIndex >= suggestions.length) {
         return;
       }
-      setState({
-        selectedIndex: selectedIndex + 1,
-        filterValue: state.filterValue,
-        suggestions
-      });
+      setSelectedIndex(selectedIndex + 1);
     } else if (event.keyCode === 38) {
-      if (
-        state.selectedIndex <= 1 ||
-        state.selectedIndex > suggestions.length
-      ) {
+      if (selectedIndex <= 1 || selectedIndex > suggestions.length) {
         return;
       }
-      setState({
-        selectedIndex: selectedIndex - 1,
-        filterValue: state.filterValue,
-        suggestions
-      });
+      setSelectedIndex(selectedIndex - 1);
     }
   };
 
   const onClick: (index: number) => void = index => {
-    const selectedValue: string = state.suggestions[index - 1];
-    setState({
-      selectedIndex: index,
-      filterValue: "",
-      suggestions: state.suggestions,
-      selectedValue
-    });
+    const selectedValue: string = suggestions[index - 1];
+    setSelectedIndex(index);
+    setFilterValue("");
+    setSelectedValue(suggestions[index - 1]);
+
     props.onSelectedChange(selectedValue);
   };
 
@@ -131,18 +114,18 @@ export const ChartFilter: React.FunctionComponent<IChartFilterProps> = (
       <div>Filter by folder</div>
       <FilterInputBorder>
         <FilterInput
-          value={state.filterValue ? state.filterValue : ""}
+          value={filterValue ? filterValue : ""}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
         />
       </FilterInputBorder>
-      <div>{state.selectedValue}</div>
+      <div>{selectedValue}</div>
       <FilterSuggestionsWrapper>
-        {state.filterValue.length > 2 && (
+        {filterValue.length > 2 && (
           <FilterSuggestions
             onclick={onClick}
-            selected={state.selectedIndex}
-            results={state.suggestions}
+            selected={selectedIndex}
+            results={suggestions}
           />
         )}
       </FilterSuggestionsWrapper>
