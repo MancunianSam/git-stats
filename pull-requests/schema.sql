@@ -2,7 +2,7 @@ CREATE TABLE pull_requests
 (
     id bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
     created_at timestamp,
-    closedAt timestamp,
+    closed_at timestamp,
     title varchar(255),
     author varchar(255),
     merged boolean,
