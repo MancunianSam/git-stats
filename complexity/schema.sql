@@ -1,4 +1,7 @@
 SET FOREIGN_KEY_CHECKS  = 0;
+drop schema if exists git_stats_complexity;
+create schema git_stats_complexity;
+use git_stats_complexity;
 drop table if exists repository;
 drop table if exists files;
 drop table if exists function_details;

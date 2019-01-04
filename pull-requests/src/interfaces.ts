@@ -3,6 +3,19 @@ interface IPageInfo {
   endCursor: string;
 }
 
+export interface IRepositoryInsert {
+  id?: number;
+  name?: string;
+  taskId?: string;
+  userName?: string;
+}
+
+export interface IEmitObject {
+  state: string;
+  complete: number;
+  repositoryId: number;
+}
+
 interface ICommits {
   __typename?: string;
   totalCount: number;
@@ -46,6 +59,7 @@ export interface IPullRequestInsert {
   additions: number;
   deletions: number;
   commits: number;
+  repositoryId?: number;
 }
 
 interface IRepository {

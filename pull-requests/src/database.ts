@@ -1,5 +1,5 @@
 import * as knex from "knex";
-import { IEdge, IPullRequestInsert } from "./interfaces";
+import { IEdge, IPullRequestInsert, IRepositoryInsert } from "./interfaces";
 
 const toSnakeCase: (str: string) => string = str => {
   return str.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
@@ -11,11 +11,50 @@ const connection = knex({
   connection: {
     host: "localhost",
     user: "root",
-    database: "git_stats"
+    database: "git_stats_pull_requests"
   }
 });
 
-export const insertPullRequests: (edges: IEdge[]) => void = edges => {
+export const insertRepository: (
+  repository: IRepositoryInsert
+) => Promise<void> = async ({ name, userName, taskId }) => {
+  await connection("repository").insert({ name, userName, taskId });
+};
+
+export const setRepositoryComplete: (id: number) => void = id => {
+  connection("repository")
+    .where({ id })
+    .update({ complete: true })
+    .catch(err => console.log(err));
+};
+
+export const getRepository: (
+  name: string,
+  userName: string
+) => Promise<IRepositoryInsert> = async (name, userName) => {
+  return await connection
+    .select()
+    .from("repository")
+    .where("name", name)
+    .where("userName", userName)
+    .then(data => {
+      if (data[0]) {
+        const { id, name, task_id, user_name } = data[0];
+        return {
+          id,
+          name,
+          taskId: task_id,
+          userName: user_name
+        };
+      }
+      return {};
+    });
+};
+
+export const insertPullRequests: (
+  edges: IEdge[],
+  repositoryId: number
+) => void = (edges, repositoryId) => {
   const pullRequests: IPullRequestInsert[] = edges.map(edge => {
     const {
       createdAt,
@@ -26,6 +65,7 @@ export const insertPullRequests: (edges: IEdge[]) => void = edges => {
       deletions
     } = edge.node;
     return {
+      repositoryId,
       createdAt,
       closedAt,
       title,
