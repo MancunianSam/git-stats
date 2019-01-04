@@ -21,7 +21,7 @@ export const insertRepository: (
   await connection("repository").insert({ name, userName, taskId });
 };
 
-export const setRepositoryComplete: (id: number, complete: boolean) => void = (
+export const setRepositoryComplete: (id: number, complete?: boolean) => void = (
   id,
   complete = true
 ) => {
