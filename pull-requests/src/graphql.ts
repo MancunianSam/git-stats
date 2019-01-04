@@ -1,6 +1,11 @@
 import { gql, ObservableQuery } from "apollo-boost";
 import { IData, IEdge, IEmitObject } from "./interfaces";
-import { ApolloClient } from "apollo-client";
+import {
+  ApolloClient,
+  OperationVariables,
+  WatchQueryOptions,
+  FetchMoreQueryOptions
+} from "apollo-client";
 import fetch from "node-fetch";
 import { createHttpLink } from "apollo-link-http";
 import { InMemoryCache } from "apollo-cache-inmemory";
@@ -37,6 +42,44 @@ export class GraphQl {
     io.to(uuid).emit("update", obj);
   };
 
+  private getWatchQueryOptions: (
+    owner: string,
+    name: string
+  ) => WatchQueryOptions = (owner, name) => {
+    return {
+      query: gql`
+        query PullRequests($cursor: String, $owner: String!, $name: String!) {
+          repository(owner: $owner, name: $name) {
+            pullRequests(first: 50, after: $cursor) {
+              totalCount
+              pageInfo {
+                endCursor
+              }
+              edges {
+                node {
+                  createdAt
+                  closedAt
+                  title
+                  author {
+                    login
+                  }
+                  merged
+                  additions
+                  deletions
+                  commits {
+                    totalCount
+                  }
+                }
+                cursor
+              }
+            }
+          }
+        }
+      `,
+      variables: { cursor: null, owner, name }
+    };
+  };
+
   createPullRequestTables: (
     uuid: string,
     owner: string,
@@ -44,38 +87,9 @@ export class GraphQl {
   ) => void = async (uuid, owner, name) => {
     getRepository(name, owner).then(repository => {
       const repositoryId: number = repository ? (repository.id as number) : 0;
-      const query: ObservableQuery<IData> = this.client.watchQuery({
-        query: gql`
-          query PullRequests($cursor: String, $owner: String!, $name: String!) {
-            repository(owner: $owner, name: $name) {
-              pullRequests(first: 50, after: $cursor) {
-                totalCount
-                pageInfo {
-                  endCursor
-                }
-                edges {
-                  node {
-                    createdAt
-                    closedAt
-                    title
-                    author {
-                      login
-                    }
-                    merged
-                    additions
-                    deletions
-                    commits {
-                      totalCount
-                    }
-                  }
-                  cursor
-                }
-              }
-            }
-          }
-        `,
-        variables: { cursor: null, owner, name }
-      });
+      const query: ObservableQuery<IData> = this.client.watchQuery(
+        this.getWatchQueryOptions(owner, name)
+      );
 
       query.subscribe(result => {
         const lastCursor: string =
