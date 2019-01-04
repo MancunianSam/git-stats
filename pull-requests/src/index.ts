@@ -1,15 +1,17 @@
 import * as express from "express";
 import * as http from "http";
 import * as socketio from "socket.io";
+import { v4 } from "uuid";
 
 import { GraphQl } from "./graphql";
 import {
   getRepository,
   insertRepository,
-  setRepositoryComplete
+  setRepositoryComplete,
+  deletePullRequests
 } from "./database";
 import { IRepositoryInsert } from "./interfaces";
-import { getStatus, setStatus } from "./redis";
+import { getStatus } from "./redis";
 
 const app: express.Application = express();
 app.use(express.json({ strict: false }));
@@ -26,13 +28,21 @@ const io: socketio.Server = socketio.listen(server);
 const graphql: GraphQl = new GraphQl(io);
 
 app.post("/repository", (req, res) => {
-  // const uuid: string = v4();
-  const taskId: string = "e0f4e605-e0a0-42d3-be46-cd064ebe75bf";
+  const taskId: string = v4();
   const name: string = req.body.repository_name;
   const userName: string = req.body.user_name;
-  insertRepository({ name, userName, taskId }).then(() => {
-    graphql.createPullRequestTables(taskId, userName, name);
+  getRepository(name, userName).then(repository => {
+    if (repository.id) {
+      setRepositoryComplete(repository.id, false);
+      deletePullRequests(repository.id);
+      graphql.createPullRequestTables(taskId, userName, name);
+    } else {
+      insertRepository({ name, userName, taskId }).then(() => {
+        graphql.createPullRequestTables(taskId, userName, name);
+      });
+    }
   });
+
   res.send(taskId);
 });
 

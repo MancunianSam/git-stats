@@ -21,10 +21,13 @@ export const insertRepository: (
   await connection("repository").insert({ name, userName, taskId });
 };
 
-export const setRepositoryComplete: (id: number) => void = id => {
+export const setRepositoryComplete: (id: number, complete: boolean) => void = (
+  id,
+  complete = true
+) => {
   connection("repository")
     .where({ id })
-    .update({ complete: true })
+    .update({ complete })
     .catch(err => console.log(err));
 };
 
@@ -49,6 +52,15 @@ export const getRepository: (
       }
       return {};
     });
+};
+
+export const deletePullRequests: (
+  repositoryId: number
+) => void = repositoryId => {
+  connection("pull_requests")
+    .where("repository_id", repositoryId)
+    .del()
+    .catch(d => console.log(d));
 };
 
 export const insertPullRequests: (
