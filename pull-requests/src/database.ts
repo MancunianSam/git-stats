@@ -1,5 +1,6 @@
 import * as knex from "knex";
 import { IEdge, IPullRequestInsert, IRepositoryInsert } from "./interfaces";
+import { setStatus } from "./redis";
 
 const toSnakeCase: (str: string) => string = str => {
   return str.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
@@ -11,24 +12,30 @@ const connection = knex({
   connection: {
     host: "localhost",
     user: "root",
-    database: "git_stats_pull_requests"
+    database: "git_stats"
   }
 });
 
 export const insertRepository: (
   repository: IRepositoryInsert
 ) => Promise<void> = async ({ name, userName, taskId }) => {
-  await connection("repository").insert({ name, userName, taskId });
+  await connection("pull_requests_repository").insert({
+    name,
+    userName,
+    taskId
+  });
 };
 
-export const setRepositoryComplete: (id: number, complete?: boolean) => void = (
-  id,
-  complete = true
-) => {
-  connection("repository")
+export const setRepositoryComplete: (
+  id: number,
+  taskId: string,
+  complete?: boolean
+) => void = (id, taskId, complete = true) => {
+  connection("pull_requests_repository")
     .where({ id })
-    .update({ complete })
+    .update({ complete, taskId })
     .catch(err => console.log(err));
+  setStatus(taskId, complete ? "COMPLETE" : "RUNNING");
 };
 
 export const getRepository: (
@@ -37,7 +44,7 @@ export const getRepository: (
 ) => Promise<IRepositoryInsert> = async (name, userName) => {
   return await connection
     .select()
-    .from("repository")
+    .from("pull_requests_repository")
     .where("name", name)
     .where("userName", userName)
     .then(data => {

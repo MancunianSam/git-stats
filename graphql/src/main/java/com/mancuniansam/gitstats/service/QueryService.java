@@ -37,10 +37,10 @@ public class QueryService {
 	public List<ComplexityByFunction> complexityByFunction(Long repositoryId, String filePath) {
 		if(isNull(filePath)) {
 			return complexityByFunctionRepository
-					.findByRepository_IdOrderByComplexityDesc(repositoryId);
+					.findTop10ByComplexityRepository_IdOrderByComplexityDesc(repositoryId);
 		}
 		return complexityByFunctionRepository
-				.findByRepository_IdAndFunction_File_FilePathOrderByComplexityDesc(repositoryId, filePath);
+				.findTop10ByComplexityRepository_IdAndFunction_File_FilePathOrderByComplexityDesc(repositoryId, filePath);
 	}
 
 	public List<ComplexityByFile> complexityByFile(Long repositoryId) {
@@ -50,14 +50,14 @@ public class QueryService {
 	public List<ComplexityByFile> complexityByFile(Long repositoryId, String filePath) {
 		if(isNull(filePath)) {
 			return this.complexityByFileRepository
-					.findByRepository_IdOrderByComplexityDesc(repositoryId);
+					.findTop10ByComplexityRepository_IdOrderByComplexityDesc(repositoryId);
 		}
 		return this.complexityByFileRepository
-				.findByRepository_IdAndFile_filePathOrderByComplexityDesc(repositoryId, filePath);
+				.findTop10ByComplexityRepository_IdAndFile_filePathOrderByComplexityDesc(repositoryId, filePath);
 	}
 
 	public List<ComplexityByRepository> complexityByRepository(Long repositoryId) {
-		return complexityByRepositoryRepository.findByRepository_IdOrderByComplexityDesc(repositoryId);
+		return complexityByRepositoryRepository.findTop10ByComplexityRepository_IdOrderByComplexityDesc(repositoryId);
 	}
 
 	public Set<String> filesByFileName(Long repositoryId, String name) {
@@ -65,7 +65,7 @@ public class QueryService {
 			return Collections.emptySet();
 		}
 		List<ComplexityByFile> files = complexityByFileRepository
-				.findByRepository_IdAndFile_FilePathLike(repositoryId, "%" + name + "%");
+				.findTop10ByComplexityRepository_IdAndFile_FilePathLike(repositoryId, "%" + name + "%");
 
 		return files.stream()
 				.map(ComplexityByFile::getFilePath)

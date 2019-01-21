@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ComplexityByFunctionRepository extends CrudRepository<ComplexityByFunction, Long> {
 
-	List<ComplexityByFunction> findByRepository_IdOrderByComplexityDesc(Long repositoryId);
+	List<ComplexityByFunction> findTop10ByComplexityRepository_IdOrderByComplexityDesc(Long repositoryId);
 
-	List<ComplexityByFunction> findByRepository_IdAndFunction_File_FilePathOrderByComplexityDesc(Long repositoryId, String filePath);
+	List<ComplexityByFunction> findTop10ByComplexityRepository_IdAndFunction_File_FilePathOrderByComplexityDesc(Long repositoryId, String filePath);
 }

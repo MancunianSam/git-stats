@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface ComplexityByRepositoryRepository extends CrudRepository<ComplexityByRepository, Long> {
 
-	List<ComplexityByRepository> findByRepository_IdOrderByComplexityDesc(Long repositoryId);
+	List<ComplexityByRepository> findTop10ByComplexityRepository_IdOrderByComplexityDesc(Long repositoryId);
 }

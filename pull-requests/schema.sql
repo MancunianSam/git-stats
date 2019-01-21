@@ -4,7 +4,7 @@ DROP schema if exists git_stats_pull_requests;
 create schema git_stats_pull_requests;
 use git_stats_pull_requests;
 
-CREATE TABLE repository (
+CREATE TABLE pull_requests_repository (
   id bigint(20) NOT NULL AUTO_INCREMENT,
   name varchar(255) DEFAULT NULL,
   task_id varchar(255) DEFAULT NULL,
@@ -23,7 +23,10 @@ CREATE TABLE pull_requests
     merged boolean,
     additions int,
     deletions int,
-    commits int
+    commits int,
+    repository_id bigint,
+    KEY repository_id (repository_id),
+  FOREIGN KEY (repository_id) REFERENCES pull_requests_repository (id) ON DELETE CASCADE
 );
 
 SET FOREIGN_KEY_CHECKS  = 1;

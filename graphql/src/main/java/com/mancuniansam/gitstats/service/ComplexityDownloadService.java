@@ -36,7 +36,7 @@ public class ComplexityDownloadService {
 		List<ComplexityByFunction> results = queryService.complexityByFunction(repositoryId);
 
 		Map<String, Function<ComplexityByFunction, String>> functionDescripton = new LinkedHashMap<String, Function<ComplexityByFunction, String>>() {{
-			put("Repository Name", f -> f.getRepository().getName());
+			put("ComplexityRepository Name", f -> f.getComplexityRepository().getName());
 			put("Function Name", f -> f.getFunction().getName());
 			put("NLOC", f -> f.getNloc().toString());
 			put("Complexity", f -> f.getComplexity().toString());
@@ -49,7 +49,7 @@ public class ComplexityDownloadService {
 		List<ComplexityByFile> results = queryService.complexityByFile(repositoryId);
 
 		Map<String, Function<ComplexityByFile, String>> fileDescription = new LinkedHashMap<String, Function<ComplexityByFile, String>>() {{
-			put("Repository Name", f -> f.getRepository().getName());
+			put("ComplexityRepository Name", f -> f.getComplexityRepository().getName());
 			put("File Name", f -> f.getFile().getFileName());
 			put("NLOC", f -> f.getNloc().toString());
 			put("Complexity", f -> f.getComplexity().toString());

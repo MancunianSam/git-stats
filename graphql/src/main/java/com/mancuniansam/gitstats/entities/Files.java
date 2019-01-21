@@ -21,7 +21,7 @@ public class Files {
 
 	@ManyToOne
 	@JoinColumn(name = "repository_id")
-	private Repository repository;
+	private ComplexityRepository complexityRepository;
 
 	public Long getId() {
 		return id;
@@ -55,11 +55,11 @@ public class Files {
 		this.nloc = nloc;
 	}
 
-	public Repository getRepository() {
-		return repository;
+	public ComplexityRepository getComplexityRepository() {
+		return complexityRepository;
 	}
 
-	public void setRepository(Repository repository) {
-		this.repository = repository;
+	public void setComplexityRepository(ComplexityRepository complexityRepository) {
+		this.complexityRepository = complexityRepository;
 	}
 }

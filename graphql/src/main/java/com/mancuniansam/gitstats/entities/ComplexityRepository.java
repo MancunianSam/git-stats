@@ -3,9 +3,9 @@ package com.mancuniansam.gitstats.entities;
 import javax.persistence.*;
 
 @Entity
-@Table(name="repository")
+@Table(name="complexity_repository")
 @SuppressWarnings("unused")
-public class Repository {
+public class ComplexityRepository {
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)

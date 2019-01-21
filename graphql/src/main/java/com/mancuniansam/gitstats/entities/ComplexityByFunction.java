@@ -1,6 +1,9 @@
 package com.mancuniansam.gitstats.entities;
 
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
 import javax.persistence.*;
 
 @Entity
@@ -8,8 +11,9 @@ import javax.persistence.*;
 @SuppressWarnings("unused")
 public class ComplexityByFunction extends ComplexityAggregates {
 
-	@ManyToOne
+	@OneToOne
 	@JoinColumn(name = "function_id")
+	@Fetch(FetchMode.JOIN)
 	private FunctionDetails function;
 
 

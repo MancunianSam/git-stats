@@ -1,8 +1,6 @@
 SET FOREIGN_KEY_CHECKS  = 0;
-drop schema if exists git_stats_complexity;
-create schema git_stats_complexity;
-use git_stats_complexity;
-drop table if exists repository;
+use git_stats;
+drop table if exists complexity_repository;
 drop table if exists files;
 drop table if exists function_details;
 drop table if exists complexity_by_file;
@@ -10,7 +8,7 @@ drop table if exists complexity_by_repository;
 drop table if exists complexity_by_function;
 
 
-CREATE TABLE repository (
+CREATE TABLE complexity_repository (
 
   id bigint(20) NOT NULL AUTO_INCREMENT,
   name varchar(255) DEFAULT NULL,
@@ -28,7 +26,7 @@ CREATE TABLE files (
   repository_id bigint(20) DEFAULT NULL,
   PRIMARY KEY (id),
   KEY repository_id (repository_id),
-  FOREIGN KEY (repository_id) REFERENCES repository (id) ON DELETE CASCADE
+  FOREIGN KEY (repository_id) REFERENCES complexity_repository (id) ON DELETE CASCADE
 );
 
 CREATE TABLE function_details (
@@ -51,7 +49,7 @@ create table complexity_by_file (
   PRIMARY KEY (id),
   KEY repository_id (repository_id),
   KEY file_id (file_id),
-  FOREIGN KEY (repository_id) REFERENCES repository (id) ON DELETE CASCADE,
+  FOREIGN KEY (repository_id) REFERENCES complexity_repository (id) ON DELETE CASCADE,
   FOREIGN KEY (file_id) REFERENCES files (id) ON DELETE CASCADE
 );
 
@@ -64,7 +62,7 @@ create table complexity_by_function (
   PRIMARY KEY (id),
   KEY repository_id (repository_id),
   KEY function_id (function_id),
-  FOREIGN KEY (repository_id) REFERENCES repository (id) ON DELETE CASCADE,
+  FOREIGN KEY (repository_id) REFERENCES complexity_repository (id) ON DELETE CASCADE,
   FOREIGN KEY (function_id) REFERENCES function_details (id) ON DELETE CASCADE
 );
 
@@ -76,7 +74,7 @@ create table complexity_by_repository (
   nloc int,
   PRIMARY KEY (id),
   KEY repository_id (repository_id),
-  FOREIGN KEY (repository_id) REFERENCES repository (id) ON DELETE CASCADE
+  FOREIGN KEY (repository_id) REFERENCES complexity_repository (id) ON DELETE CASCADE
 );
 
 

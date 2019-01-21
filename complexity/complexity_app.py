@@ -129,14 +129,15 @@ def create_aggregate_tables(repository_id):
             (repository_id,))
         cursor.execute(
             'insert into complexity_by_repository select null, r.id, sum(fd.complexity), sum(f.nloc) from '
-            'repository r join files f on f.repository_id = r.id join function_details fd on fd.file_id = f.id group '
+            'complexity_repository r join files f on f.repository_id = r.id join function_details fd on fd.file_id = '
+            'f.id group '
             'by 1,2;')
 
 
 def create_repository(repository, request_id, user_name):
     connection = get_connection()
     with connection.cursor() as cursor:
-        sql = 'INSERT INTO repository (name, task_id, user_name) values (%s, %s, %s)'
+        sql = 'INSERT INTO complexity_repository (name, task_id, user_name) values (%s, %s, %s)'
         cursor.execute(sql, (repository, str(request_id), user_name,))
     print('Repository created')
     return get_repository(repository, user_name)[0]
@@ -145,14 +146,14 @@ def create_repository(repository, request_id, user_name):
 def update_repository_status(repository_name, user_name):
     connection = get_connection()
     with connection.cursor() as cursor:
-        sql = 'UPDATE repository set status = %s where name = %s and user_name = %s'
+        sql = 'UPDATE complexity_repository set status = %s where name = %s and user_name = %s'
         cursor.execute(sql, ('complete', repository_name, user_name,))
 
 
 def get_repository(repository, user_name):
     connection = get_connection()
     with connection.cursor() as cursor:
-        sql = 'SELECT * from repository where name = %s and user_name = %s'
+        sql = 'SELECT * from complexity_repository where name = %s and user_name = %s'
         cursor.execute(sql, (repository, user_name,))
         return cursor.fetchone()
 
