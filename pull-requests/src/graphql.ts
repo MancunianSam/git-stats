@@ -38,7 +38,7 @@ export class GraphQl {
     io,
     uuid
   ) => {
-    console.log(obj);
+    console.log(uuid);
     io.to(uuid).emit("update", obj);
   };
 
@@ -85,6 +85,8 @@ export class GraphQl {
     owner: string,
     name: string
   ) => void = async (uuid, owner, name) => {
+    console.log(owner);
+    console.log(name);
     getRepository(name, owner).then(repository => {
       const repositoryId: number = repository ? (repository.id as number) : 0;
       const query: ObservableQuery<IData> = this.client.watchQuery(
@@ -106,8 +108,7 @@ export class GraphQl {
             this.io,
             uuid
           );
-          setRepositoryComplete(repositoryId);
-          setStatus(uuid, "COMPLETE");
+          setRepositoryComplete(repositoryId, uuid);
           return;
         }
         query.fetchMore({
@@ -122,7 +123,7 @@ export class GraphQl {
               ? oldPullRequests.length
               : newPullRequests.length;
             const complete: number = (totalProcessed / totalCount) * 100;
-
+            console.log(`Running ${complete}`);
             this.emitMessage(
               { state: "RUNNING", complete, repositoryId },
               this.io,
