@@ -2,3 +2,8 @@ cleanup.sql
 .idea/
 __pycache__*
 venv/
+bin/
+lib/
+lizard_ext/
+include/
+.Python
