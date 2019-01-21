@@ -41,6 +41,7 @@ export class GitStatsNavigation extends React.Component<{}, {}> {
           <img src={logo} height={"50px"} width={"50px"} />
           <NavigationItem href="/">Home</NavigationItem>
           <NavigationItem href="/complexity">Complexity</NavigationItem>
+          <NavigationItem href="/pullRequests">Pull Requests</NavigationItem>
         </NavBar>
       </div>
     );

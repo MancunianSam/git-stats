@@ -2,13 +2,13 @@ import * as React from "react";
 
 import { FilterSuggestions } from "./FilterSuggestions";
 import { ApolloClient } from "apollo-boost";
-import { SEARCH_FILE_NAMES } from "../queries/queries";
 import styled, { StyledComponent } from "@emotion/styled";
 
 interface IChartFilterProps {
   repositoryId: number;
   client: ApolloClient<{}>;
   onSelectedChange: (selectedValue: string) => void;
+  query: string;
 }
 
 interface IFilterInputProps {
@@ -70,7 +70,7 @@ export const ChartFilter: React.FunctionComponent<IChartFilterProps> = (
     const filterValue: string = event.target.value;
     props.client
       .query({
-        query: SEARCH_FILE_NAMES,
+        query: props.query,
         variables: { repositoryId: props.repositoryId, name: filterValue }
       })
       .then(data => {

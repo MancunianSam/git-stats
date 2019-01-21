@@ -1,11 +1,12 @@
 import React, { Component } from "react";
 import { Route, Router } from "react-router";
-import { Complexity } from "./Complexity";
+import { PullRequests } from "./PullRequests";
 import { Home } from "./Home";
 import { BrowserRouter } from "react-router-dom";
 import { GitStatsNavigation } from "./GitStatsNavigation";
 import { ApolloProvider } from "react-apollo";
 import ApolloClient from "apollo-boost";
+import { Complexity } from "./Complexity";
 
 class App extends Component<{}, {}> {
   public client = new ApolloClient({
@@ -20,6 +21,7 @@ class App extends Component<{}, {}> {
             <GitStatsNavigation />
             <Route exact path="/" component={Home} />
             <Route path="/complexity" component={Complexity} />
+            <Route path="/pullRequests" component={PullRequests} />
           </div>
         </BrowserRouter>
       </ApolloProvider>

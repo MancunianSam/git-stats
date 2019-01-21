@@ -3,12 +3,12 @@ import axios from "axios";
 import styled, { StyledComponent } from "@emotion/styled";
 import io from "socket.io-client";
 
-import { ProgressBar } from "../Components/ProgressBar";
-import { Select } from "../Components/Select";
-import { Button } from "../Components/Button";
+import { ProgressBar } from "./ProgressBar";
+import { Select } from "./Select";
+import { Button } from "./Button";
 import { getRepositoryDetails, IRepositoryDetails } from "../utils/utils";
 
-const StyledComplexitySelection: StyledComponent<{}, {}, {}> = styled.div`
+const StyledGitStatsSelection: StyledComponent<{}, {}, {}> = styled.div`
   display: flex;
   flex-direction: column;
   padding: 15px;
@@ -21,7 +21,7 @@ interface IRepositories {
   label: string;
 }
 
-interface IComplexitySelectionState {
+interface IGitStatsSelectionState {
   repositories: IRepositories[];
   repository: string;
   repositoryId?: number;
@@ -30,15 +30,18 @@ interface IComplexitySelectionState {
   complete?: boolean;
 }
 
-interface IComplexitySelectionProps {
+interface IGitStatsSelectionProps {
   updateParentState: (complete: boolean, repository: number) => void;
+  wsUrl: string;
+  workerHost: string;
+  buttonLabel: string;
 }
 
-export class ComplexitySelection extends React.Component<
-  IComplexitySelectionProps,
-  IComplexitySelectionState
+export class GitStatsSelection extends React.Component<
+  IGitStatsSelectionProps,
+  IGitStatsSelectionState
 > {
-  constructor(props: IComplexitySelectionProps) {
+  constructor(props: IGitStatsSelectionProps) {
     super(props);
     this.state = {
       repositories: [],
@@ -49,7 +52,7 @@ export class ComplexitySelection extends React.Component<
 
   public getPercentageComplete: (taskId: string) => void = taskId => {
     this.setState({ loading: true });
-    const socket: SocketIOClient.Socket = io.connect("ws://localhost:5000");
+    const socket: SocketIOClient.Socket = io.connect(this.props.wsUrl);
     socket.emit("join", { room: taskId });
     socket.on("update", response => {
       console.log(response);
@@ -74,21 +77,24 @@ export class ComplexitySelection extends React.Component<
       this.state.repository
     );
     axios
-      .post("http://localhost:5000/repository", {
+      .post(`http://${this.props.workerHost}/repository`, {
         repository_name: details.name,
         repository_url: details.url,
         user_name: details.userName
       })
       .then(response => {
         this.getPercentageComplete(response.data);
-      });
+      })
+      .catch(err => console.log(err));
   };
 
   public checkState: (repository: string) => void = repository => {
     const details: IRepositoryDetails = getRepositoryDetails(repository);
     axios
       .get(
-        `http://localhost:5000/repository/${details.name}/${details.userName}`
+        `http://${this.props.workerHost}/repository/${details.name}/${
+          details.userName
+        }`
       )
       .then(response => {
         const status: string = response.data["status"];
@@ -135,7 +141,7 @@ export class ComplexitySelection extends React.Component<
         },
         {
           label: "spectrum",
-          value: "https://github.com/MancunianSam/spectrum.git"
+          value: "https://github.com/withspectrum/spectrum.git"
         }
       ],
       repository
@@ -154,14 +160,15 @@ export class ComplexitySelection extends React.Component<
 
   public render() {
     return (
-      <StyledComplexitySelection>
+      <StyledGitStatsSelection>
         <h4>{"Select a git repository"}</h4>
         <Select
           options={this.state.repositories}
           onChange={this.handleRepositoryChange}
         />
         <Button onClick={this.loadStats}>
-          {this.state.complete ? "Regenerate" : "Generate"} Complexity Stats
+          {this.state.complete ? "Regenerate " : "Generate "}
+          {this.props.buttonLabel}
         </Button>
         <form
           action={`http://localhost:9000/download/${this.state.repositoryId}`}
@@ -172,7 +179,7 @@ export class ComplexitySelection extends React.Component<
         {this.state.loading && (
           <ProgressBar width={this.state.percentageComplete} />
         )}
-      </StyledComplexitySelection>
+      </StyledGitStatsSelection>
     );
   }
 }

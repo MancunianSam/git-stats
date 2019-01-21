@@ -10,14 +10,16 @@ interface IGridConfiguration {
   gridColumnStart: number;
 }
 
-interface IChartContainerProps {
-  gridConfiguration: IGridConfiguration;
+export interface IPublicChartContainerProps {
   title: string;
   query: DocumentNode;
   chartType: ChartType;
-  repository: number;
   dataKey: string;
-  filePath?: string;
+}
+
+interface IChartContainerProps extends IPublicChartContainerProps {
+  variables: { [index: string]: string | number };
+  gridConfiguration: IGridConfiguration;
 }
 
 interface ICommonProps {
@@ -53,10 +55,7 @@ const getChart: (chartType: ChartType, query: DocumentNode) => JSX.Element = (
 
 export const ChartContainer: React.SFC<IChartContainerProps> = props => {
   return (
-    <Query
-      query={props.query}
-      variables={{ repositoryId: props.repository, filePath: props.filePath }}
-    >
+    <Query query={props.query} variables={props.variables}>
       {({ loading, error, data }) => {
         if (loading) return "Loading";
         if (error) return `Error ${error.message}`;
