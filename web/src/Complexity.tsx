@@ -5,6 +5,7 @@ import {
   ChartType
 } from "./Components/ChartContainer";
 import { COMPLEXITY_BY_FUNCTION, COMPLEXITY_BY_FILE } from "./queries/queries";
+import { IPublicGitStatsSelectionProps } from "./Components/GitStatsSelection";
 
 const charts: IPublicChartContainerProps[] = [
   {
@@ -21,6 +22,12 @@ const charts: IPublicChartContainerProps[] = [
   }
 ];
 
+const selectionDetails: IPublicGitStatsSelectionProps = {
+  wsUrl: "ws://localhost:5000",
+  workerHost: "localhost:5000",
+  buttonLabel: "Complexity Stats"
+};
+
 export const Complexity: React.SFC<{}> = () => {
-  return <PageTemplate charts={charts} />;
+  return <PageTemplate charts={charts} selectionDetails={selectionDetails} />;
 };

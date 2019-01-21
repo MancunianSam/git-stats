@@ -30,11 +30,14 @@ interface IGitStatsSelectionState {
   complete?: boolean;
 }
 
-interface IGitStatsSelectionProps {
-  updateParentState: (complete: boolean, repository: number) => void;
+export interface IPublicGitStatsSelectionProps {
   wsUrl: string;
   workerHost: string;
   buttonLabel: string;
+}
+
+interface IGitStatsSelectionProps extends IPublicGitStatsSelectionProps {
+  updateParentState: (complete: boolean, repository: number) => void;
 }
 
 export class GitStatsSelection extends React.Component<

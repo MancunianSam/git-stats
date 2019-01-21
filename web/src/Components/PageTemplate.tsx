@@ -1,7 +1,10 @@
 import * as React from "react";
 import styled, { StyledComponent } from "@emotion/styled";
 
-import { GitStatsSelection } from "./GitStatsSelection";
+import {
+  GitStatsSelection,
+  IPublicGitStatsSelectionProps
+} from "./GitStatsSelection";
 import {
   ChartContainer,
   ChartType,
@@ -30,6 +33,7 @@ interface IPageTemplateState {
 
 interface IPageTemplateProps {
   charts: IPublicChartContainerProps[];
+  selectionDetails: IPublicGitStatsSelectionProps;
 }
 
 export class PageTemplate extends React.Component<
@@ -61,10 +65,10 @@ export class PageTemplate extends React.Component<
       <GitStatsGrid>
         <span>{this.state.filterValue}</span>
         <GitStatsSelection
+          workerHost={this.props.selectionDetails.workerHost}
+          buttonLabel={this.props.selectionDetails.buttonLabel}
+          wsUrl={this.props.selectionDetails.wsUrl}
           updateParentState={this.updateCompleteAndRepository}
-          wsUrl="ws://localhost:5000"
-          workerHost="localhost:5000"
-          buttonLabel="Complexity Stats"
         />
         <ApolloConsumer>
           {client => {
@@ -80,8 +84,10 @@ export class PageTemplate extends React.Component<
         </ApolloConsumer>
 
         {this.state.complete &&
+          this.state.repository &&
           this.props.charts.map(chart => (
             <ChartContainer
+              key={chart.dataKey}
               query={chart.query}
               gridConfiguration={{
                 gridRowStart: gridRowStart++,
