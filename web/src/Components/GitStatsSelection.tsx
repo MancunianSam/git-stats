@@ -41,6 +41,8 @@ export class GitStatsSelection extends React.Component<
   IGitStatsSelectionProps,
   IGitStatsSelectionState
 > {
+  private socket: SocketIOClient.Socket;
+
   constructor(props: IGitStatsSelectionProps) {
     super(props);
     this.state = {
@@ -48,18 +50,18 @@ export class GitStatsSelection extends React.Component<
       repository: "",
       percentageComplete: 0
     };
+    this.socket = io.connect(this.props.wsUrl);
   }
 
   public getPercentageComplete: (taskId: string) => void = taskId => {
     this.setState({ loading: true });
-    const socket: SocketIOClient.Socket = io.connect(this.props.wsUrl);
-    socket.emit("join", { room: taskId });
-    socket.on("update", response => {
+    this.socket.emit("join", { room: taskId });
+    this.socket.on("update", response => {
       console.log(response);
       this.setState({ percentageComplete: response["complete"] });
       if (response["state"] === "SUCCESS") {
         const repositoryId: number = response["repositoryId"];
-        socket.close();
+        this.socket.close();
         this.setState({
           loading: false,
           percentageComplete: 0,
@@ -84,6 +86,7 @@ export class GitStatsSelection extends React.Component<
       })
       .then(response => {
         this.getPercentageComplete(response.data);
+        this.checkState(this.state.repository);
       })
       .catch(err => console.log(err));
   };
