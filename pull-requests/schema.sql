@@ -1,8 +1,6 @@
 SET FOREIGN_KEY_CHECKS  = 0;
 
-DROP schema if exists git_stats_pull_requests;
-create schema git_stats_pull_requests;
-use git_stats_pull_requests;
+use git_stats;
 
 CREATE TABLE pull_requests_repository (
   id bigint(20) NOT NULL AUTO_INCREMENT,
