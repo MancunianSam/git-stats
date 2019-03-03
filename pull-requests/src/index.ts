@@ -54,7 +54,14 @@ app.get("/repository/:name/:userName", async (req, res) => {
     req.params.name,
     req.params.userName
   );
-  if (repository && repository.taskId && repository.id) {
+  console.log(repository.complete);
+  if (repository.complete) {
+    res.send({
+      repository_id: repository.id,
+      task_id: repository.taskId,
+      status: "SUCCESS"
+    });
+  } else if (repository && repository.taskId && repository.id) {
     const result: any = {
       repository_id: repository.id,
       task_id: repository.taskId,

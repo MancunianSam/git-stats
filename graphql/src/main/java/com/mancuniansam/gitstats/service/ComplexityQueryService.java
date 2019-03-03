@@ -1,5 +1,6 @@
 package com.mancuniansam.gitstats.service;
 
+import com.coxautodev.graphql.tools.GraphQLQueryResolver;
 import com.mancuniansam.gitstats.entities.ComplexityByFile;
 import com.mancuniansam.gitstats.entities.ComplexityByFunction;
 import com.mancuniansam.gitstats.entities.ComplexityByRepository;
@@ -16,21 +17,21 @@ import java.util.stream.Collectors;
 import static java.util.Objects.isNull;
 
 @Component
-public class QueryService {
+public class ComplexityQueryService implements GraphQLQueryResolver {
 
 	private ComplexityByFunctionRepository complexityByFunctionRepository;
 	private ComplexityByFileRepository complexityByFileRepository;
 	private ComplexityByRepositoryRepository complexityByRepositoryRepository;
 
-	public QueryService(ComplexityByFunctionRepository complexityByFunctionRepository,
-						ComplexityByFileRepository complexityByFileRepository,
-						ComplexityByRepositoryRepository complexityByRepositoryRepository) {
+	public ComplexityQueryService(ComplexityByFunctionRepository complexityByFunctionRepository,
+								  ComplexityByFileRepository complexityByFileRepository,
+								  ComplexityByRepositoryRepository complexityByRepositoryRepository) {
 		this.complexityByFunctionRepository = complexityByFunctionRepository;
 		this.complexityByFileRepository = complexityByFileRepository;
 		this.complexityByRepositoryRepository = complexityByRepositoryRepository;
 	}
 
-	public List<ComplexityByFunction> complexityByFunction(Long repositoryId) {
+	List<ComplexityByFunction> complexityByFunction(Long repositoryId) {
 		return complexityByFunction(repositoryId, null);
 	}
 
@@ -43,7 +44,7 @@ public class QueryService {
 				.findTop10ByComplexityRepository_IdAndFunction_File_FilePathOrderByComplexityDesc(repositoryId, filePath);
 	}
 
-	public List<ComplexityByFile> complexityByFile(Long repositoryId) {
+	List<ComplexityByFile> complexityByFile(Long repositoryId) {
 		return complexityByFile(repositoryId, null);
 	}
 
@@ -60,7 +61,7 @@ public class QueryService {
 		return complexityByRepositoryRepository.findTop10ByComplexityRepository_IdOrderByComplexityDesc(repositoryId);
 	}
 
-	public Set<String> filesByFileName(Long repositoryId, String name) {
+	public Set<String> searchFileName(Long repositoryId, String name) {
 		if (isNull(name) || name.isEmpty()) {
 			return Collections.emptySet();
 		}

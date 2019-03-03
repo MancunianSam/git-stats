@@ -14,6 +14,7 @@ import { ChartFilter } from "./ChartFilter";
 import { COMPLEXITY_BY_FILE, COMPLEXITY_BY_FUNCTION } from "../queries/queries";
 import { ApolloConsumer } from "react-apollo";
 import { SEARCH_FILE_NAMES } from "../queries/queries";
+import { DateFilter } from "./DateFilter";
 
 const GitStatsGrid: StyledComponent<{}, {}, {}> = styled.div`
   display: grid;
@@ -34,6 +35,8 @@ interface IPageTemplateState {
 interface IPageTemplateProps {
   charts: IPublicChartContainerProps[];
   selectionDetails: IPublicGitStatsSelectionProps;
+  showFileFilter?: boolean;
+  showDateFilter?: boolean;
 }
 
 export class PageTemplate extends React.Component<
@@ -70,19 +73,26 @@ export class PageTemplate extends React.Component<
           wsUrl={this.props.selectionDetails.wsUrl}
           updateParentState={this.updateCompleteAndRepository}
         />
-        <ApolloConsumer>
-          {client => {
-            return (
-              <ChartFilter
-                repositoryId={this.state.repository}
-                client={client}
-                onSelectedChange={this.onSelectedChange}
-                query={SEARCH_FILE_NAMES}
-              />
-            );
-          }}
-        </ApolloConsumer>
-
+        {this.props.showFileFilter && (
+          <ApolloConsumer>
+            {client => {
+              return (
+                <ChartFilter
+                  repositoryId={this.state.repository}
+                  client={client}
+                  onSelectedChange={this.onSelectedChange}
+                  query={SEARCH_FILE_NAMES}
+                />
+              );
+            }}
+          </ApolloConsumer>
+        )}
+        {this.props.showDateFilter && (
+          <DateFilter
+            repositoryId={this.state.repository}
+            onSelectedChange={this.onSelectedChange}
+          />
+        )}
         {this.state.complete &&
           this.state.repository &&
           this.props.charts.map(chart => (
@@ -95,6 +105,7 @@ export class PageTemplate extends React.Component<
               }}
               title={chart.title}
               chartType={chart.chartType}
+              dataProps={chart.dataProps}
               variables={{
                 repositoryId: this.state.repository,
                 filePath: this.state.selectedValue

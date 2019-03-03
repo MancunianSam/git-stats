@@ -35,7 +35,7 @@ export const setRepositoryComplete: (
     .where({ id })
     .update({ complete, taskId })
     .catch(err => console.log(err));
-  setStatus(taskId, complete ? "COMPLETE" : "RUNNING");
+  setStatus(taskId, complete ? "SUCCESS" : "RUNNING");
 };
 
 export const getRepository: (
@@ -49,12 +49,13 @@ export const getRepository: (
     .where("userName", userName)
     .then(data => {
       if (data[0]) {
-        const { id, name, task_id, user_name } = data[0];
+        const { id, name, task_id, user_name, complete } = data[0];
         return {
           id,
           name,
           taskId: task_id,
-          userName: user_name
+          userName: user_name,
+          complete
         };
       }
       return {};

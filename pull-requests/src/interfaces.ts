@@ -8,6 +8,7 @@ export interface IRepositoryInsert {
   name?: string;
   taskId?: string;
   userName?: string;
+  complete?: boolean;
 }
 
 export interface IEmitObject {

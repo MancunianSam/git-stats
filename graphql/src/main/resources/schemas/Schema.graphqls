@@ -15,9 +15,27 @@ type ComplexityByRepository {
 	complexity: Int
 }
 
+type TimeToClose {
+	daysToClose: Int
+	numberOfPullRequests: Int
+}
+
+type CommitCount {
+	commitCount: Int
+	numberOfPullRequests: Int
+}
+
+type TopLineChanges {
+	title: String
+	lineChanges: Int
+}
 type Query {
     complexityByFunction(repositoryId: Int!, filePath: String): [ComplexityByFunction]!
 	complexityByFile(repositoryId: Int!, filePath: String): [ComplexityByFile]!
 	complexityByRepository(repositoryId: Int!): [ComplexityByRepository]!
 	searchFileName(repositoryId: Int!, name: String): [String]!
+	timeToClose(repositoryId: Int!): [TimeToClose]!
+	commitCount(repositoryId: Int!): [CommitCount]!
+	topAdditions(repositoryId: Int!): [TopLineChanges]!
+	topDeletions(repositoryId: Int!): [TopLineChanges]!
 }

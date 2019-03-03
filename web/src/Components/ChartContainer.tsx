@@ -4,6 +4,7 @@ import { Query } from "react-apollo";
 
 import { StatsBarChart } from "../Charts/StatsBarChart";
 import { StatsAreaChart } from "../Charts/StatsAreaChart";
+import { StatsPieChart } from "../Charts/StatsPieChart";
 
 interface IGridConfiguration {
   gridRowStart: number;
@@ -15,6 +16,7 @@ export interface IPublicChartContainerProps {
   query: DocumentNode;
   chartType: ChartType;
   dataKey: string;
+  dataProps: IDataProps;
 }
 
 interface IChartContainerProps extends IPublicChartContainerProps {
@@ -22,34 +24,35 @@ interface IChartContainerProps extends IPublicChartContainerProps {
   gridConfiguration: IGridConfiguration;
 }
 
-interface ICommonProps {
-  data: any;
+interface IDataProps {
   name: string;
   key1: string;
-  key2: string;
+  key2?: string;
 }
 
 export enum ChartType {
   BAR,
-  AREA
+  AREA,
+  PIE
 }
 
-const getChart: (chartType: ChartType, query: DocumentNode) => JSX.Element = (
-  chartType,
-  data
-) => {
-  const commonProps: ICommonProps = {
-    data: data,
-    name: "name",
-    key1: "nloc",
-    key2: "complexity"
+const getChart: (
+  chartType: ChartType,
+  data: DocumentNode,
+  dataProps: IDataProps
+) => JSX.Element = (chartType, data, dataProps) => {
+  const commonProps: IDataProps = {
+    name: dataProps.name,
+    key1: dataProps.key1,
+    key2: dataProps.key2
   };
-
   switch (chartType) {
     case ChartType.BAR:
-      return <StatsBarChart {...commonProps} />;
+      return <StatsBarChart data={data} {...commonProps} />;
     case ChartType.AREA:
-      return <StatsAreaChart {...commonProps} />;
+      return <StatsAreaChart data={data} {...commonProps} />;
+    case ChartType.PIE:
+      return <StatsPieChart data={data} {...commonProps} />;
   }
 };
 
@@ -67,7 +70,7 @@ export const ChartContainer: React.SFC<IChartContainerProps> = props => {
             }}
           >
             <span style={{ fontFamily: "Open Sans" }}>{props.title}</span>
-            {getChart(props.chartType, data[props.dataKey])}
+            {getChart(props.chartType, data[props.dataKey], props.dataProps)}
           </div>
         );
       }}

@@ -12,7 +12,7 @@ interface IAreaChartProps {
   data: {}[];
   name: string;
   key1: string;
-  key2: string;
+  key2?: string;
 }
 
 export const StatsAreaChart: React.SFC<IAreaChartProps> = props => {

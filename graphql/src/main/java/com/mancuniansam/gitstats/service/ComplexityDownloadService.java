@@ -17,10 +17,10 @@ import java.util.function.Function;
 @SuppressWarnings("unchecked")
 public class ComplexityDownloadService {
 
-	private QueryService queryService;
+	private ComplexityQueryService complexityQueryService;
 
-	public ComplexityDownloadService(QueryService queryService) {
-		this.queryService = queryService;
+	public ComplexityDownloadService(ComplexityQueryService complexityQueryService) {
+		this.complexityQueryService = complexityQueryService;
 	}
 
 	public Workbook createComplexityWorkbook(Long repositoryId) {
@@ -33,7 +33,7 @@ public class ComplexityDownloadService {
 	}
 
 	private ComplexityConfiguration getComplexityByFunctionResults(Long repositoryId) {
-		List<ComplexityByFunction> results = queryService.complexityByFunction(repositoryId);
+		List<ComplexityByFunction> results = complexityQueryService.complexityByFunction(repositoryId);
 
 		Map<String, Function<ComplexityByFunction, String>> functionDescripton = new LinkedHashMap<String, Function<ComplexityByFunction, String>>() {{
 			put("ComplexityRepository Name", f -> f.getComplexityRepository().getName());
@@ -46,7 +46,7 @@ public class ComplexityDownloadService {
 	}
 
 	private ComplexityConfiguration getComplexityByFileResults(Long repositoryId) {
-		List<ComplexityByFile> results = queryService.complexityByFile(repositoryId);
+		List<ComplexityByFile> results = complexityQueryService.complexityByFile(repositoryId);
 
 		Map<String, Function<ComplexityByFile, String>> fileDescription = new LinkedHashMap<String, Function<ComplexityByFile, String>>() {{
 			put("ComplexityRepository Name", f -> f.getComplexityRepository().getName());

@@ -26,3 +26,39 @@ export const SEARCH_FILE_NAMES: DocumentNode = gql`
     searchFileName(repositoryId: $repositoryId, name: $name)
   }
 `;
+
+export const TIME_TO_CLOSE: DocumentNode = gql`
+  query timeToClose($repositoryId: Int!) {
+    timeToClose(repositoryId: $repositoryId) {
+      daysToClose
+      numberOfPullRequests
+    }
+  }
+`;
+
+export const TOP_ADDITIONS: DocumentNode = gql`
+  query topAdditions($repositoryId: Int!) {
+    topAdditions(repositoryId: $repositoryId) {
+      title
+      lineChanges
+    }
+  }
+`;
+
+export const TOP_DELETIONS: DocumentNode = gql`
+  query topDeletions($repositoryId: Int!) {
+    topDeletions(repositoryId: $repositoryId) {
+      title
+      lineChanges
+    }
+  }
+`;
+
+export const COMMIT_COUNT: DocumentNode = gql`
+  query commitCount($repositoryId: Int!) {
+    commitCount(repositoryId: $repositoryId) {
+      commitCount
+      numberOfPullRequests
+    }
+  }
+`;
